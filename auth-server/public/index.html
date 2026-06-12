@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>登录 / 注册</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0f14; --panel: #13161e; --border: #1f2330;
+      --accent: #5b6af7; --accent-glow: rgba(91,106,247,0.22);
+      --text: #e8eaf2; --muted: #6b7080; --input-bg: #0d0f14;
+      --success: #34c97a; --error: #f05c6e; --radius: 12px;
+    }
+    body {
+      min-height: 100vh; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Inter', sans-serif; color: var(--text);
+    }
+    body::before {
+      content: ''; position: fixed; top: -200px; left: 50%;
+      transform: translateX(-50%); width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(91,106,247,0.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 20px; padding: 44px 40px; width: 100%; max-width: 420px;
+      position: relative; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), #8b77f7);
+      border-radius: 10px; display: grid; place-items: center;
+    }
+    .logo-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .logo-name { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 17px; }
+
+    /* Tabs */
+    .tabs { display: flex; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 28px; }
+    .tab {
+      flex: 1; padding: 9px; text-align: center; font-size: 13.5px; font-weight: 500;
+      cursor: pointer; border-radius: 8px; color: var(--muted);
+      transition: background 0.2s, color 0.2s;
+    }
+    .tab.active { background: var(--accent); color: #fff; }
+
+    h1 { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+    .field { margin-bottom: 14px; }
+    label { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 6px; }
+    input {
+      width: 100%; background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 11px 14px; color: var(--text);
+      font-size: 14px; font-family: 'Inter', sans-serif; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input::placeholder { color: #3a3f52; }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    .row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 20px; }
+    .remember { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); cursor: pointer; }
+    .remember input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--accent); }
+    .forgot { font-size: 13px; color: var(--accent); text-decoration: none; }
+
+    .btn {
+      width: 100%; padding: 12px; background: linear-gradient(135deg, var(--accent), #7c6af5);
+      border: none; border-radius: var(--radius); color: #fff; font-size: 14px;
+      font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(91,106,247,0.3);
+      transition: opacity 0.2s, transform 0.15s; position: relative;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .toast {
+      display: none; margin-top: 14px; padding: 11px 14px;
+      border-radius: var(--radius); font-size: 13px; font-weight: 500;
+      text-align: center;
+    }
+    .toast.success { display: block; background: rgba(52,201,122,0.12); border: 1px solid rgba(52,201,122,0.3); color: var(--success); }
+    .toast.error   { display: block; background: rgba(240,92,110,0.12); border: 1px solid rgba(240,92,110,0.3); color: var(--error); }
+
+    /* Dashboard */
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+    .forms { display: block; }
+    .forms.hidden { display: none; }
+
+    .welcome { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .user-email { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+    .info-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .info-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+    .info-row:last-child { border-bottom: none; }
+    .info-row span:first-child { color: var(--muted); }
+    .btn-outline {
+      width: 100%; padding: 11px; background: transparent;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--muted); font-size: 13.5px; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: background 0.2s, color 0.2s;
+    }
+    .btn-outline:hover { background: var(--border); color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <span class="logo-name">测试平台</span>
+  </div>
+
+  <!-- ── Forms ── -->
+  <div class="forms" id="forms">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('login')">登录</div>
+      <div class="tab" onclick="switchTab('register')">注册</div>
+    </div>
+
+    <!-- Login -->
+    <div id="loginForm">
+      <h1>欢迎回来</h1>
+      <p class="subtitle">登录你的账户以继续</p>
+      <div class="field"><label>邮箱地址</label><input id="l-email" type="email" placeholder="you@example.com"/></div>
+      <div class="field"><label>密码</label><input id="l-pass" type="password" placeholder="••••••••"/></div>
+      <div class="row">
+        <label class="remember"><input type="checkbox"/> 记住我</label>
+        <a href="#" class="forgot">忘记密码？</a>
+      </div>
+      <button class="btn" id="loginBtn" onclick="login()">登录</button>
+      <div class="toast" id="loginToast"></div>
+    </div>
+
+    <!-- Register -->
+    <div id="registerForm" style="display:none">
+      <h1>创建账户</h1>
+      <p class="subtitle">注册一个新账户开始使用</p>
+      <div class="field"><label>用户名</label><input id="r-name" type="text" placeholder="你的名字"/></div>
+      <div class="field"><label>邮箱地址</label><input id="r-email" type="email" placeholder="you@example.com"/></div>
+      <div class="field"><label>密码（至少 6 位）</label><input id="r-pass" type="password" placeholder="••••••••"/></div>
+      <div style="margin-bottom:20px"></div>
+      <button class="btn" id="regBtn" onclick="register()">注册</button>
+      <div class="toast" id="regToast"></div>
+    </div>
+  </div>
+
+  <!-- ── Dashboard ── -->
+  <div class="dashboard" id="dashboard">
+    <p class="welcome">你好，<span id="d-name"></span> 👋</p>
+    <p class="user-email" id="d-email"></p>
+    <div class="info-box">
+      <div class="info-row"><span>用户 ID</span><span id="d-id">—</span></div>
+      <div class="info-row"><span>邮箱</span><span id="d-email2">—</span></div>
+      <div class="info-row"><span>注册时间</span><span id="d-created">—</span></div>
+    </div>
+    <button class="btn" style="margin-bottom:10px" onclick="window.open('/api/users','_blank')">查看所有用户</button>
+    <button class="btn-outline" onclick="logout()">退出登录</button>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
+    document.getElementById('loginForm').style.display    = tab === 'login'    ? '' : 'none';
+    document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+  }
+
+  function showToast(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.className = `toast ${type}`;
+    setTimeout(() => el.className = 'toast', 4000);
+  }
+
+  async function login() {
+    const btn = document.getElementById('loginBtn');
+    const email = document.getElementById('l-email').value.trim();
+    const password = document.getElementById('l-pass').value;
+    btn.disabled = true; btn.textContent = '登录中…';
+    try {
+      const res = await fetch(`${API}/login`, { method:'POST', headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'}, body: JSON.stringify({email,password}) });
+      const data = await res.json();
+      if (!res.ok) { showToast('loginToast', data.error, 'error'); return; }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.username);
+      showToast('loginToast', '登录成功，跳转中…', 'success');
+      setTimeout(loadDashboard, 800);
+    } catch { showToast('loginToast', '无法连接服务器，请确认服务器已启动', 'error'); }
+    finally { btn.disabled = false; btn.textContent = '登录'; }
+  }
+
+  async function register() {
+    const btn = document.getElementById('regBtn');
+    const username = document.getElementById('r-name').value.trim();
+    const email = document.getElementById('r-email').value.trim();
+    const password = document.getElementById('r-pass').value;
+    btn.disabled = true; btn.textContent = '注册中…';
+    try {
+      const res = await fetch(`${API}/register`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username,email,password}) });
+      const data = await res.json();
+      if (!res.ok) { showToast('regToast', data.error, 'error'); return; }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.username);
+      showToast('regToast', '注册成功！', 'success');
+      setTimeout(loadDashboard, 800);
+    } catch { showToast('regToast', '无法连接服务器，请确认服务器已启动', 'error'); }
+    finally { btn.disabled = false; btn.textContent = '注册'; }
+  }
+
+  async function loadDashboard() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/me`, { headers:{ Authorization: `Bearer ${token}` } });
+      if (!res.ok) { logout(); return; }
+      const user = await res.json();
+      document.getElementById('d-name').textContent    = user.username;
+      document.getElementById('d-email').textContent   = user.email;
+      document.getElementById('d-id').textContent      = user.id;
+      document.getElementById('d-email2').textContent  = user.email;
+      document.getElementById('d-created').textContent = new Date(user.created_at).toLocaleString('zh-CN');
+      document.getElementById('forms').classList.add('hidden');
+      document.getElementById('dashboard').classList.add('active');
+    } catch {}
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    document.getElementById('forms').classList.remove('hidden');
+    document.getElementById('dashboard').classList.remove('active');
+  }
+
+  // Auto-login if token exists
+  if (localStorage.getItem('token')) loadDashboard();
+</script>
+</body>
+</html>
