@@ -16,5 +16,7 @@
 - **轮播圆点被 margin-bottom 推到底部**: 改用 carousel-dots 自身 margin-bottom 替代 carousel 的 margin-bottom
 
 ### 变更
+- **项目根目录扁平化**: 移除 `auth-server/` 子目录，所有文件提升到 `AuthCore_0613/` 根目录，`node server.js` 直接在根目录启动，Git 历史保留
+- **移除 bottom-bar**: 去掉移动端底部导航栏，优化移动端全屏体验
 - **picb_scraper 优化**: 移除末尾 `window.scrollTo(0,0)`，使多次运行从当前位置继续而非从头开始
 - **数据清理**: 删除 images 表 id≥17 的旧数据，重新导入后分类统一设为 141（18+）
