@@ -22,7 +22,6 @@
   --radius: 10px;
   --radius-sm: 6px;
   --transition: 0.2s ease;
-  --bottom-bar-height: 56px;
 }
 
 body {
@@ -102,26 +101,6 @@ body {
   transition: background var(--transition); text-decoration: none;
 }
 .user-dropdown button:hover, .user-dropdown a:hover { background: #333; color: #fff; }
-
-/* ============================================================
-   Bottom Bar (Mobile)
-   ============================================================ */
-.bottom-bar {
-  display: none;
-  position: fixed; bottom: 0; left: 0; right: 0;
-  height: var(--bottom-bar-height);
-  background: #1a1a1a; border-top: 1px solid var(--border);
-  justify-content: space-around; align-items: center;
-  z-index: 950; padding: 0 4px;
-}
-.bottom-bar-item {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  color: var(--text-muted); font-size: 10px; cursor: pointer;
-  background: none; border: none; padding: 6px 8px;
-  transition: color var(--transition);
-}
-.bottom-bar-item.active { color: var(--accent); }
-.bottom-bar-item svg { width: 20px; height: 20px; }
 
 /* ============================================================
    Sidebar
@@ -302,8 +281,7 @@ body {
   .sidebar-item.active { border-bottom: none; border-left-color: var(--accent); background: rgba(91,106,247,0.12); }
   .sidebar-item span { display: inline; }
   .sidebar-item svg { width: 20px; height: 20px; }
-  .main-content { margin-left: 0; margin-bottom: var(--bottom-bar-height); padding: 12px; }
-  .bottom-bar { display: flex; }
+  .main-content { margin-left: 0; padding: 12px; }
   .navbar { padding: 0 10px; }
   .navbar-logo { display: none; }
   .navbar-links a, .navbar-links span { font-size: 12px; padding: 5px 10px; }
