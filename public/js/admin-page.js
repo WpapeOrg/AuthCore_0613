@@ -1,4 +1,12 @@
 // admin-page.js - 图片审批页面逻辑
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(function() { t.classList.add('show'); });
+  setTimeout(function() { t.classList.remove('show'); setTimeout(function() { t.remove(); }, 300); }, 2000);
+}
 const API = '/api';
 const token = localStorage.getItem('token');
 
@@ -8,7 +16,7 @@ async function checkAdmin() {
     const res = await fetch(API + '/me', { headers: { 'Authorization': 'Bearer ' + token } });
     if (!res.ok) { localStorage.clear(); window.location.href = '/login.html'; return false; }
     const user = await res.json();
-    if (user.role !== 'admin') { alert('无权访问'); window.location.href = '/'; return false; }
+    if (user.role !== 'admin') { showToast('无权访问'); window.location.href = '/'; return false; }
   } catch { window.location.href = '/'; return false; }
   return true;
 }
@@ -57,9 +65,9 @@ async function approveImage(id) {
       updateCount();
     } else {
       const data = await res.json();
-      alert(data.error || '操作失败');
+      showToast(data.error || '操作失败');
     }
-  } catch { alert('网络错误'); }
+  } catch { showToast('网络错误'); }
 }
 
 async function rejectImage(id) {
@@ -73,9 +81,9 @@ async function rejectImage(id) {
       updateCount();
     } else {
       const data = await res.json();
-      alert(data.error || '操作失败');
+      showToast(data.error || '操作失败');
     }
-  } catch { alert('网络错误'); }
+  } catch { showToast('网络错误'); }
 }
 
 function updateCount() {

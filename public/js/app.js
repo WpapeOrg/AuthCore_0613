@@ -124,6 +124,7 @@ async function init() {
   gallery.appendChild(renderSkeletonGrid(8));
 
   await checkAuth();
+  window.__isAdmin = (state.role === 'admin');
   await loadCategories();
   updateNavbar();
   renderSortTabs();
@@ -497,8 +498,20 @@ function goUpload() {
 
 // ── Scroll to top ───────────────────────────────────
 function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  var area = document.querySelector('.home-content-area');
+  if (area) area.scrollTop = 0;
 }
+
+// ── BFCache 恢复：从预览返回首页时清空路由并修复布局 ─────────
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    // 从预览返回时清空路由，防止携带预览页的 hash
+    if (window.location.hash) {
+      window.location.hash = '';
+    }
+  }
+});
 
 // ── Start ───────────────────────────────────────────
 init();
+

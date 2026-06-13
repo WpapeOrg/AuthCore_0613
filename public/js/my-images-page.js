@@ -1,4 +1,12 @@
 // my-images-page.js - 我的发布页面逻辑
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(function() { t.classList.add('show'); });
+  setTimeout(function() { t.classList.remove('show'); setTimeout(function() { t.remove(); }, 300); }, 2000);
+}
 const API = '/api';
 const token = localStorage.getItem('token');
 if (!token) { window.location.href = '/login.html'; }
@@ -66,9 +74,9 @@ async function delistImage(id) {
       }
     } else {
       const data = await res.json();
-      alert(data.error || '下架失败');
+      showToast(data.error || '下架失败');
     }
-  } catch { alert('网络错误'); }
+  } catch { showToast('网络错误'); }
 }
 
 function escapeHtml(s) {

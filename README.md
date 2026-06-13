@@ -38,6 +38,13 @@ AuthCore_0613/
 ├── tools/
 │   ├── picb_scraper.js    # picb.cc 爬虫脚本
 │   └── import.json        # 导入数据样例
+├── ios-app/               # iOS 原生壳 App（WKWebView）
+│   ├── AuthCore.xcodeproj/
+│   └── AuthCore/
+│       ├── AuthCoreApp.swift
+│       ├── ContentView.swift
+│       ├── Info.plist
+│       └── Assets.xcassets/
 ├── package.json           # 项目依赖配置
 └── users.db               # SQLite 数据库（首次启动后自动生成）
 ```
@@ -517,3 +524,33 @@ Authorization: Bearer <JWT Token>
 - Token 有效期为 **7 天**，过期需重新登录。
 - 查询本地端口是否开启 `lsof -i :3000`
 - 强制关闭node端口 `kill -9 42619`
+
+---
+
+## iOS App 打包
+
+项目包含一个 iOS 原生壳 App，通过 WKWebView 加载本地服务器页面。
+
+### 前置条件
+- macOS + Xcode 15+
+- 有效的 Apple Developer 账号（免费账号即可）
+- iPhone 与 Mac 在同一局域网
+
+### 打包步骤
+1. 启动 Node.js 服务器：`node server.js`
+2. 确认 Mac 局域网 IP（默认硬编码 `192.168.1.102:3000`，可在 `ios-app/AuthCore/ContentView.swift` 中修改 `serverURL()`）
+3. 用 Xcode 打开 `ios-app/AuthCore.xcodeproj`
+4. 选择你的 iPhone 作为运行目标
+5. Signing & Capabilities → Team 选择你的 Apple ID
+6. `Cmd+R` 编译并安装到手机
+
+### 项目结构
+```
+ios-app/
+├── AuthCore.xcodeproj/        # Xcode 工程
+└── AuthCore/
+    ├── AuthCoreApp.swift       # SwiftUI App 入口
+    ├── ContentView.swift       # WKWebView + 沉浸式全屏
+    ├── Info.plist              # 本地网络权限 & 状态栏配置
+    └── Assets.xcassets/        # App 图标
+```

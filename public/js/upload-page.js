@@ -1,4 +1,12 @@
 // upload-page.js - 批量上传页面逻辑
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(function() { t.classList.add('show'); });
+  setTimeout(function() { t.classList.remove('show'); setTimeout(function() { t.remove(); }, 300); }, 2000);
+}
 const API = '/api';
 const token = localStorage.getItem('token');
 if (!token) { window.location.href = '/login.html'; }
@@ -36,7 +44,7 @@ fileInput.addEventListener('change', () => {
 function addFiles(files) {
   const images = files.filter(f => f.type.startsWith('image/'));
   if (selectedFiles.length + images.length > 20) {
-    alert('最多上传 20 张图片');
+    showToast('最多上传 20 张图片');
     return;
   }
   selectedFiles = selectedFiles.concat(images);
@@ -65,7 +73,7 @@ submitBtn.addEventListener('click', async () => {
   if (selectedFiles.length === 0) return;
 
   const categoryId = document.getElementById('category').value;
-  if (!categoryId) { alert('请选择分类'); return; }
+  if (!categoryId) { showToast('请选择分类'); return; }
 
   submitBtn.disabled = true;
   submitBtn.textContent = '上传中...';
@@ -84,13 +92,13 @@ submitBtn.addEventListener('click', async () => {
     });
     const data = await res.json();
     if (res.ok) {
-      alert(`成功上传 ${data.images.length} 张图片，等待审核`);
+      showToast(`成功上传 ${data.images.length} 张图片，等待审核`);
       window.location.href = '/';
     } else {
-      alert(data.error || '上传失败');
+      showToast(data.error || '上传失败');
     }
   } catch {
-    alert('网络错误');
+    showToast('网络错误');
   }
   submitBtn.disabled = false;
   submitBtn.textContent = '上传';

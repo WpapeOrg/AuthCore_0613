@@ -1,4 +1,20 @@
 // preview-page.js - 图片预览轮播页面逻辑
+
+// Toast 提示（替代 alert）
+(function() {
+  var style = document.createElement('style');
+  style.textContent = '.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:14px;pointer-events:none;opacity:0;transition:opacity .3s}.toast.show{opacity:1}';
+  document.head.appendChild(style);
+})();
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(function() { t.classList.add('show'); });
+  setTimeout(function() { t.classList.remove('show'); setTimeout(function() { t.remove(); }, 300); }, 2000);
+}
+
 const API = '/api';
 const token = localStorage.getItem('token');
 
@@ -27,11 +43,11 @@ async function loadImages() {
       const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
       const res = await fetch(API + `/images/${imageId}`, { headers });
       const img = await res.json();
-      if (img.error) { alert(img.error); return; }
+      if (img.error) { showToast(img.error); return; }
       images = [img];
     }
 
-    if (images.length === 0) { alert('图片不存在'); return; }
+    if (images.length === 0) { showToast('图片不存在'); return; }
 
     // 找到初始图片索引
     if (imageId) {
@@ -45,7 +61,7 @@ async function loadImages() {
     // group 模式用锚点 ID 加载，非 group 模式用当前图片 ID
     loadDetail(anchorId || currentImage.id);
   } catch (e) {
-    alert('加载失败');
+    showToast('加载失败');
   }
 }
 
@@ -187,7 +203,7 @@ async function loadComments(imgId) {
 }
 
 async function toggleLike() {
-  if (!token) { alert('请先登录'); return; }
+  if (!token) { showToast('请先登录'); return; }
   // group 模式用锚点 ID，单图模式用当前图片 ID
   const targetId = anchorId || currentImage.id;
   try {
@@ -228,7 +244,7 @@ function toggleComment() {
 }
 
 async function submitComment() {
-  if (!token) { alert('请先登录'); return; }
+  if (!token) { showToast('请先登录'); return; }
   // group 模式用锚点 ID，单图模式用当前图片 ID
   const targetId = anchorId || currentImage.id;
   const input = document.getElementById('commentInput');
@@ -246,9 +262,9 @@ async function submitComment() {
       loadComments(targetId);
     } else {
       const data = await res.json();
-      alert(data.error || '评论失败');
+      showToast(data.error || '评论失败');
     }
-  } catch { alert('网络错误'); }
+  } catch { showToast('网络错误'); }
 }
 
 function escapeHtml(s) {
@@ -268,6 +284,47 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') navigate(-1);
   if (e.key === 'ArrowRight') navigate(1);
 });
+
+// ── 保存图片 ─────────────────────────────────────────
+(function() {
+  var btn = document.getElementById('saveBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function() {
+    var slide = document.querySelector('.carousel-slide:nth-child(' + (currentIndex + 1) + ') img');
+    if (!slide) return;
+    var url = slide.src;
+    var filename = url.split('/').pop().split('?')[0] || 'image.jpg';
+
+    // 手机端：通过原生层保存到相册
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.saveImage) {
+        window.webkit.messageHandlers.saveImage.postMessage({ url: url });
+        showToast('正在保存...');
+      } else {
+        // 回退：跳转图片，用 styled HTML 避免留白
+        var html = '<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>*{margin:0;padding:0}body{background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh}img{max-width:100vw;max-height:100vh;max-height:100dvh;width:auto;height:auto;object-fit:contain}.tip{color:#fff;font-size:14px;position:fixed;top:0;left:0;right:0;text-align:center;padding:12px 0;z-index:10;background:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent)}</style></head><body><div class="tip">请长按保存</div><img src="' + url + '"></body></html>';
+        document.write(html);
+        document.close();
+      }
+      return;
+    }
+
+    // PC 端：fetch + blob 下载
+    fetch(url)
+      .then(function(res) { return res.blob(); })
+      .then(function(blob) {
+        var blobUrl = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 100);
+      })
+      .catch(function() { showToast('保存失败'); });
+  });
+})();
 
 // ── 启动 ─────────────────────────────────────────────
 loadImages();

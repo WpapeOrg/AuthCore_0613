@@ -89,5 +89,78 @@
 
 <script src="js/fallback.js"></script>
 <script src="js/app.js"></script>
+<script>
+(function logLayoutHeights() {
+  var panel = document.createElement('div');
+  panel.id = '__debug_panel';
+  panel.style.cssText = 'position:fixed;bottom:10px;right:10px;z-index:99999;background:rgba(0,0,0,0.85);color:#0f0;font:11px/1.5 monospace;padding:10px;border-radius:6px;max-width:90vw;max-height:50vh;overflow-y:auto;white-space:pre-wrap;pointer-events:none;display:none;';
+  document.body.appendChild(panel);
+
+  function measure() {
+    var navbar = document.querySelector('.navbar') || document.querySelector('.top-bar');
+    var mainContent = document.querySelector('.main-content');
+    var homeArea = document.querySelector('.home-content-area');
+    var body = document.body;
+    return {
+      'innerHeight': window.innerHeight,
+      'scrollY': window.scrollY,
+      'body.scrollTop': body.scrollTop,
+      'body.offsetH': body.offsetHeight,
+      'navbar.offsetH': navbar ? navbar.offsetHeight : 'null',
+      'navbar.rect.top': navbar ? Math.round(navbar.getBoundingClientRect().top) : 'null',
+      'main.offsetH': mainContent ? mainContent.offsetHeight : 'null',
+      'main.rect.top': mainContent ? Math.round(mainContent.getBoundingClientRect().top) : 'null',
+      'home.offsetH': homeArea ? homeArea.offsetHeight : 'null',
+      'home.rect.top': homeArea ? Math.round(homeArea.getBoundingClientRect().top) : 'null',
+      '--navbar-h': getComputedStyle(document.documentElement).getPropertyValue('--navbar-height').trim()
+    };
+  }
+
+  var loadLog = measure();
+
+  // ── 三击头像切换面板（仅管理员）─────────────────
+  var avatarEl = document.getElementById('userAvatar');
+  var tapCount = 0;
+  var tapTimer = null;
+  if (avatarEl) {
+    avatarEl.addEventListener('click', function(e) {
+      if (!window.__isAdmin) return;
+      tapCount++;
+      if (tapCount === 1) {
+        tapTimer = setTimeout(function() { tapCount = 0; }, 800);
+      }
+      if (tapCount >= 3) {
+        clearTimeout(tapTimer);
+        tapCount = 0;
+        panel.style.display = (panel.style.display === 'none' ? 'block' : 'none');
+        e.stopPropagation();
+      }
+    });
+  }
+
+  var lines = ['=== 首次加载 ==='];
+  Object.keys(loadLog).forEach(function(k) { lines.push(k + ': ' + loadLog[k]); });
+  panel.textContent = lines.join('\n');
+
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+      var restoreLog = measure();
+      var diff = [];
+      Object.keys(restoreLog).forEach(function(k) {
+        if (restoreLog[k] !== loadLog[k]) {
+          diff.push('✗ ' + k + ': ' + loadLog[k] + ' → ' + restoreLog[k]);
+        }
+      });
+      lines.push('', '=== bfcache 恢复 ===');
+      Object.keys(restoreLog).forEach(function(k) { lines.push(k + ': ' + restoreLog[k]); });
+      if (diff.length) {
+        lines.push('', '=== 差异 ===');
+        diff.forEach(function(d) { lines.push(d); });
+      }
+      panel.textContent = lines.join('\n');
+    }
+  });
+})();
+</script>
 </body>
 </html>
