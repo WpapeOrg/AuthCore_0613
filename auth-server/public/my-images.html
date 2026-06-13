@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的发布</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .my-page { display: flex; flex-direction: column; max-width: 800px; margin: 0 auto; padding: 20px; min-height: 100vh; background: #0f0f0f; color: #fff; }
+    .my-page h2 { margin-bottom: 20px; }
+    .status-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .status-tab { padding: 8px 16px; border-radius: 20px; border: 1px solid #333; background: transparent; color: #aaa; cursor: pointer; font-size: 13px; }
+    .status-tab.active { background: #4a9eff; color: #fff; border-color: #4a9eff; }
+    .content-area { flex: 1; display: flex; align-items: center; justify-content: center; }
+    .image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; width: 100%; align-self: flex-start; }
+    .image-card { background: #1a1a1a; border-radius: 10px; overflow: hidden; position: relative; }
+    .image-card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+    .card-close-btn {
+      position: absolute; top: 6px; right: 6px;
+      width: 28px; height: 28px; padding: 0;
+      background: rgba(0,0,0,0.55); border: none; border-radius: 50%;
+      color: #ccc; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s, color 0.2s;
+    }
+    .image-card:hover .card-close-btn { opacity: 1; }
+    .card-close-btn:hover { color: #ff4757; background: rgba(0,0,0,0.75); }
+    .card-close-btn svg { width: 14px; height: 14px; }
+    .image-card .info { padding: 10px; }
+    .image-card .title { font-size: 14px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .image-card .meta { font-size: 12px; color: #888; margin-top: 4px; display: flex; justify-content: space-between; }
+    .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+    .status-approved { background: #2ed57333; color: #2ed573; }
+    .status-pending { background: #ffa50233; color: #ffa502; }
+    .status-rejected { background: #ff475733; color: #ff4757; }
+    .empty-msg { text-align: center; color: #666; font-size: 15px; margin-top: 0; }
+    .empty-msg svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.3; display: block; margin-left: auto; margin-right: auto; }
+    .back-link { display: block; text-align: center; color: #888; margin-top: 10px; text-decoration: none; font-size: 13px; }
+    @media (max-width: 768px) {
+      .image-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="my-page">
+  <h2>我的发布</h2>
+  <div class="status-tabs">
+    <button class="status-tab active" data-status="all">全部</button>
+    <button class="status-tab" data-status="approved">已通过</button>
+    <button class="status-tab" data-status="pending">审核中</button>
+    <button class="status-tab" data-status="rejected">已拒绝</button>
+  </div>
+  <div class="content-area" id="contentArea">
+    <div class="image-grid" id="imageGrid"></div>
+    <p class="empty-msg" id="emptyMsg" style="display:none">暂无图片，快去上传吧</p>
+  </div>
+  <a href="/" class="back-link">← 返回首页</a>
+</div>
+<script src="js/fallback.js"></script>
+<script src="js/my-images-page.js"></script>
+</body>
+</html>

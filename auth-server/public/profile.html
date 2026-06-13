@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人资料</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .profile-page { max-width: 500px; margin: 0 auto; padding: 20px; min-height: 100vh; background: #0f0f0f; color: #fff; }
+    .profile-page h2 { margin-bottom: 20px; }
+    .avatar-section { text-align: center; margin-bottom: 24px; }
+    .avatar-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #333; display: inline-block; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; color: #aaa; margin-bottom: 6px; font-size: 13px; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; background: #222; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 14px; outline: none; box-sizing: border-box; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus, .form-group textarea:focus { border-color: #4a9eff; }
+    .info-row { display: flex; gap: 12px; align-items: flex-end; }
+    .info-row .form-group { flex: 1; }
+    .save-btn { width: 100%; padding: 12px; background: #4a9eff; color: #fff; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; }
+    .save-btn:hover { background: #3a8eef; }
+    .save-btn:disabled { opacity: 0.5; }
+    .msg { font-size: 13px; margin-top: 8px; display: none; }
+    .msg.error { color: #ff4757; }
+    .msg.success { color: #2ed573; }
+    .back-link { display: block; text-align: center; color: #888; margin-top: 16px; text-decoration: none; font-size: 13px; }
+    .readonly { opacity: 0.6; }
+  </style>
+</head>
+<body>
+<div class="profile-page">
+  <h2>个人资料</h2>
+  <div class="avatar-section">
+    <img class="avatar-preview" id="avatarPreview" src="" alt="头像" onerror="this.style.display='none'">
+  </div>
+  <div class="form-group">
+    <label>邮箱</label>
+    <input type="email" id="emailField" readonly class="readonly">
+  </div>
+  <div class="form-group">
+    <label for="usernameField">用户名</label>
+    <input type="text" id="usernameField" placeholder="请输入用户名">
+  </div>
+  <div class="form-group">
+    <label for="bioField">个人简介</label>
+    <textarea id="bioField" placeholder="介绍一下自己..."></textarea>
+  </div>
+  <div class="form-group">
+    <label for="ageField">年龄</label>
+    <input type="number" id="ageField" placeholder="请输入年龄（1-120）" min="1" max="120">
+  </div>
+  <button class="save-btn" id="saveBtn">保存</button>
+  <p class="msg" id="msg"></p>
+  <a href="/" class="back-link">← 返回首页</a>
+</div>
+<script src="js/profile-page.js"></script>
+</body>
+</html>

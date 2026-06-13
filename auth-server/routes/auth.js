@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
-const authMiddleware = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
 const { generateToken, ADMIN_TOKEN } = require('../config');
 
 const router = express.Router();
@@ -28,7 +28,7 @@ router.post('/register', async (req, res) => {
       return userResult;
     })();
 
-    const user = { id: result.lastInsertRowid, email };
+    const user = { id: result.lastInsertRowid, email, role: 'user' };
     res.status(201).json({ message: '注册成功', token: generateToken(user), username });
   } catch (err) {
     if (err.message.includes('UNIQUE')) {
@@ -55,14 +55,57 @@ router.post('/login', async (req, res) => {
   res.json({
     message: '登录成功',
     token: generateToken(user),
-    username: user.username
+    username: user.username,
+    role: user.role
   });
 });
 
 // ── 当前用户信息（需登录）────────────────────────────
 router.get('/me', authMiddleware, (req, res) => {
-  const user = db.prepare('SELECT id, username, email, created_at FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, username, email, avatar, bio, role, age, created_at FROM users WHERE id = ?').get(req.user.id);
   res.json(user);
+});
+
+// ── 修改个人资料（需登录）────────────────────────────
+router.put('/user/profile', authMiddleware, (req, res) => {
+  const { avatar, bio, username, age } = req.body;
+  const fields = [];
+  const params = [];
+
+  if (avatar !== undefined) { fields.push('avatar = ?'); params.push(avatar); }
+  if (bio !== undefined)    { fields.push('bio = ?');    params.push(bio);    }
+  if (username !== undefined) { fields.push('username = ?'); params.push(username); }
+  if (age !== undefined) {
+    const ageNum = parseInt(age);
+    if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+      return res.status(400).json({ error: '年龄需在 1-120 之间' });
+    }
+    fields.push('age = ?');
+    params.push(ageNum);
+  }
+
+  if (fields.length === 0) return res.status(400).json({ error: '没有要修改的字段' });
+
+  params.push(req.user.id);
+  try {
+    db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).run(...params);
+    res.json({ message: '资料已更新' });
+  } catch (err) {
+    if (err.message.includes('UNIQUE')) return res.status(409).json({ error: '用户名已被占用' });
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// ── 我的发布（需登录）────────────────────────────────
+router.get('/user/images', authMiddleware, (req, res) => {
+  const images = db.prepare(`
+    SELECT i.*, c.name as category_name
+    FROM images i
+    LEFT JOIN categories c ON i.category_id = c.id
+    WHERE i.uploader_id = ?
+    ORDER BY i.created_at DESC
+  `).all(req.user.id);
+  res.json(images);
 });
 
 // ── 所有用户（调试用）────────────────────────────────

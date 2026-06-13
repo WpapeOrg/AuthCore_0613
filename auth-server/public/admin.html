@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>审批</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-page { max-width: 1000px; margin: 0 auto; padding: 20px; min-height: 100vh; background: #0f0f0f; color: #fff; }
+    .admin-page h2 { margin-bottom: 20px; }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .admin-card { background: #1a1a1a; border-radius: 10px; overflow: hidden; }
+    .admin-card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; cursor: pointer; }
+    .admin-card .info { padding: 12px; }
+    .admin-card .title { font-size: 14px; color: #ddd; margin-bottom: 4px; }
+    .admin-card .meta { font-size: 12px; color: #888; margin-bottom: 10px; }
+    .admin-card .actions { display: flex; gap: 8px; }
+    .btn-approve, .btn-reject { flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .btn-approve { background: #2ed573; color: #000; }
+    .btn-reject { background: #ff4757; color: #fff; }
+    .btn-approve:hover { opacity: 0.8; }
+    .btn-reject:hover { opacity: 0.8; }
+    .empty-msg { text-align: center; color: #666; margin-top: 60px; }
+    .back-link { display: block; text-align: center; color: #888; margin-top: 24px; text-decoration: none; font-size: 13px; }
+    .count-badge { display: inline-block; background: #ff4757; color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 10px; margin-left: 7px; }
+    @media (max-width: 768px) {
+      .admin-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .admin-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-page">
+  <h2>图片审批 <span class="count-badge" id="pendingCount">0</span></h2>
+  <div class="admin-grid" id="adminGrid"></div>
+  <p class="empty-msg" id="emptyMsg" style="display:none">暂无待审批图片</p>
+  <a href="/" class="back-link">← 返回首页</a>
+</div>
+<script src="js/fallback.js"></script>
+<script src="js/admin-page.js"></script>
+</body>
+</html>

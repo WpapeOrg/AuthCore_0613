@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>批量导入 - 图库</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .import-container {
+      max-width: 800px;
+      margin: 80px auto 40px;
+      padding: 0 20px;
+    }
+    .import-header {
+      margin-bottom: 24px;
+    }
+    .import-header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+    .import-header p {
+      color: #888;
+      font-size: 14px;
+      margin: 0;
+    }
+    .import-form {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid #333;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #ccc;
+    }
+    .form-group .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #eee;
+      font-size: 14px;
+      outline: none;
+      appearance: none;
+      cursor: pointer;
+    }
+    .form-group select:focus {
+      border-color: #e67e22;
+    }
+    .form-group textarea {
+      width: 100%;
+      height: 280px;
+      padding: 14px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #eee;
+      font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+      resize: vertical;
+      outline: none;
+      line-height: 1.6;
+    }
+    .form-group textarea:focus {
+      border-color: #e67e22;
+    }
+    .form-group textarea::placeholder {
+      color: #555;
+    }
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn-primary {
+      padding: 10px 28px;
+      background: #e67e22;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover {
+      background: #d35400;
+    }
+    .btn-primary:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid #555;
+      border-radius: 8px;
+      color: #aaa;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: #888;
+      color: #eee;
+    }
+    /* 结果展示 */
+    .import-result {
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.8;
+      display: none;
+    }
+    .import-result.show {
+      display: block;
+    }
+    .import-result.success {
+      background: rgba(46, 204, 113, 0.1);
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      color: #2ecc71;
+    }
+    .import-result.partial {
+      background: rgba(241, 196, 15, 0.1);
+      border: 1px solid rgba(241, 196, 15, 0.3);
+      color: #f1c40f;
+    }
+    .import-result.error {
+      background: rgba(231, 76, 60, 0.1);
+      border: 1px solid rgba(231, 76, 60, 0.3);
+      color: #e74c3c;
+    }
+    .import-result ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      font-size: 13px;
+      color: #ccc;
+    }
+    /* 未登录提示 */
+    .login-required {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+    }
+    .login-required h2 {
+      font-size: 20px;
+      margin: 0 0 12px;
+      color: #ccc;
+    }
+    .login-required .btn-primary {
+      display: inline-block;
+      margin-top: 16px;
+      text-decoration: none;
+    }
+    /* 预览计数 */
+    .preview-count {
+      font-size: 13px;
+      color: #888;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="/" class="navbar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      图库
+    </a>
+  </div>
+  <div class="navbar-right">
+    <a href="/" class="btn-secondary" style="text-decoration:none;display:inline-block;line-height:1.4;">返回首页</a>
+  </div>
+</nav>
+
+<div class="import-container">
+  <div id="loginRequired" class="login-required" style="display:none;">
+    <h2>请先登录</h2>
+    <p>批量导入需要管理员权限，请先登录后再访问。</p>
+    <a href="/login.html" class="btn-primary">去登录</a>
+  </div>
+
+  <div id="importContent" style="display:none;">
+    <div class="import-header">
+      <h1>批量导入图片</h1>
+      <p>粘贴 picb.cc 爬虫脚本输出的 JSON 数据，一键导入到图库中。</p>
+    </div>
+
+    <div class="import-form">
+      <div class="form-group">
+        <label for="categorySelect">默认分类</label>
+        <select id="categorySelect">
+          <option value="">加载中...</option>
+        </select>
+        <div class="hint">JSON 中未指定分类的图片将归入此分类</div>
+      </div>
+
+      <div class="form-group">
+        <label for="jsonInput">图片数据 JSON</label>
+        <textarea id="jsonInput" placeholder='粘贴爬虫输出的 JSON 数组，例如：
+[
+  {
+    "title": "beautiful sunset",
+    "hd_path": "https://picb.cc/i/xxx.jpg",
+    "thumbnail_path": "https://picb.cc/i/xxx.th.jpg",
+    "width": 1920,
+    "height": 1080,
+    "category_id": 49
+  }
+]'></textarea>
+        <div class="preview-count" id="previewCount"></div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" id="importBtn" onclick="doImport()">导入到图库</button>
+        <button class="btn-secondary" onclick="clearForm()">清空</button>
+      </div>
+
+      <div class="import-result" id="importResult"></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/import-page.js"></script>
+</body>
+</html>
