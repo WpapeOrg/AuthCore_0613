@@ -6,6 +6,8 @@
 *::before,
 *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+html { overflow: hidden; height: 100%; }
+
 :root {
   --navbar-bg: #1a1a2e;
   --navbar-height: 60px;
@@ -28,8 +30,9 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
+  min-height: 100vh; /* fallback */
+  min-height: 100dvh;
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -38,9 +41,10 @@ body {
 .navbar {
   position: fixed; top: 0; left: 0; right: 0;
   height: var(--navbar-height);
+  padding: 0 16px;
   background: var(--navbar-bg);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; z-index: 1000;
+  z-index: 1000;
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
@@ -52,16 +56,24 @@ body {
 }
 .navbar-logo svg { width: 26px; height: 26px; }
 
-.navbar-links { display: flex; gap: 4px; }
+.navbar-links { display: flex; gap: 16px; }
 .navbar-links a,
 .navbar-links span {
-  color: var(--text-light); text-decoration: none;
-  padding: 6px 12px; border-radius: var(--radius-sm); font-size: 14px;
-  transition: all var(--transition); cursor: pointer; position: relative;
+  color: #9e9eaf; text-decoration: none;
+  padding: 8px 0; font-size: 15px; font-weight: 500;
+  transition: color var(--transition); cursor: pointer; position: relative;
 }
-.navbar-links a:hover, .navbar-links a.active,
-.navbar-links span:hover, .navbar-links span.active {
-  color: #fff; background: rgba(255,255,255,0.1);
+.navbar-links a:hover,
+.navbar-links span:hover { color: #d0d0dc; }
+.navbar-links a.active,
+.navbar-links span.active { color: #fff; }
+.navbar-links a.active::after,
+.navbar-links span.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 20px; height: 3px;
+  background: var(--accent); border-radius: 2px;
 }
 .badge-dot {
   position: absolute; top: 2px; right: 2px;
@@ -106,10 +118,10 @@ body {
    Sidebar
    ============================================================ */
 .sidebar {
-  position: fixed; top: var(--navbar-height); left: 0; bottom: 0;
+  position: fixed; top: calc(var(--navbar-height) + env(safe-area-inset-top)); left: 0; bottom: 0;
   width: 200px; background: #161616; z-index: 900;
   border-right: 1px solid var(--border);
-  padding: 12px 0; overflow-y: auto;
+  padding: 12px 0; 
   display: flex; flex-direction: column; gap: 2px;
 }
 
@@ -134,14 +146,19 @@ body {
    ============================================================ */
 .main-content {
   display: flex; flex-direction: column;
-  margin-top: var(--navbar-height);
+  margin-top: calc(var(--navbar-height) + env(safe-area-inset-top));
   margin-left: 200px;
   padding: 20px;
-  min-height: calc(100vh - var(--navbar-height));
+  height: calc(100vh - var(--navbar-height) - env(safe-area-inset-top)); /* fallback */
+  height: calc(100dvh - var(--navbar-height) - env(safe-area-inset-top));
+  overflow: hidden;
 }
 
 .home-content-area {
   flex: 1; display: flex; flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 
 .state-message {

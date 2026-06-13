@@ -1,5 +1,14 @@
 const app = require('./app');
+const path = require('path');
 const { PORT } = require('./config');
+
+// 禁止 HTML 缓存，确保 WKWebView 每次拿到最新页面
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') || req.path === '/' || !path.extname(req.path)) {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+  next();
+});
 
 app.listen(PORT, () => {
   console.log(`\n服务器已启动！`);
