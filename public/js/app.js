@@ -22,7 +22,6 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 const navbarLinks = $("#navbarLinks");
-const bottomBar = $("#bottomBar");
 const gallery = $("#gallery");
 const userArea = $("#userArea");
 const loginBtn = $("#loginBtn");
