@@ -194,6 +194,8 @@ function logout() {
   clearAuth();
   userDropdown.classList.remove("show");
   updateNavbar();
+  renderSortTabs();
+  state.sort = "newest";
   state.page = 1;
   state.images = [];
   gallery.innerHTML = "";
@@ -401,9 +403,20 @@ function renderGallery(images) {
       else if (ratio < 0.6) skelH = 300;
     }
 
+    // Build status badge for owner/admin
+    let statusBadgeHtml = '';
+    if (state.user && (img.uploader_id === state.user.id || state.role === 'admin')) {
+      if (img.status === 'pending') {
+        statusBadgeHtml = '<div class="card-status-badge pending"><span class="badge-dot-inline"></span>审核中</div>';
+      } else if (img.status === 'rejected') {
+        statusBadgeHtml = '<div class="card-status-badge rejected"><span class="badge-dot-inline"></span>未通过</div>';
+      }
+    }
+
     card.innerHTML = `
       <div class="card-img-wrap">
         ${badgeHtml}
+        ${statusBadgeHtml}
         <div class="skeleton" style="height:${skelH}px" data-src="${thumbSrc}" data-alt="${escapeHtml(img.title)}"></div>
       </div>
       <button class="card-like-btn" data-imgid="${img.id}" onclick="event.stopPropagation();toggleCardLike(${img.id}, ${globalIdx}, this)">
@@ -411,10 +424,13 @@ function renderGallery(images) {
         <span>${img.likes || 0}</span>
       </button>
       <div class="card-info">
-        <div class="card-title">${escapeHtml(img.title)}</div>
+        <div class="card-publisher">
+          <div class="card-pub-avatar">${img.uploader_avatar ? `<img src="${escapeHtml(img.uploader_avatar)}" alt="" onerror="this.style.display='none'">` : (img.uploader_name || '?').charAt(0).toUpperCase()}</div>
+          <span class="card-pub-name">${escapeHtml(img.uploader_name || '未知用户')}</span>
+        </div>
         <div class="card-meta">
           <span>${escapeHtml(img.category_name || "")}</span>
-          <span>${img.width}×${img.height}</span>
+          <span>${relativeTime(img.created_at)}</span>
         </div>
       </div>
     `;
@@ -429,6 +445,28 @@ function escapeHtml(s) {
   const d = document.createElement("div");
   d.textContent = s;
   return d.innerHTML;
+}
+
+// ── Relative time ─────────────────────────────────
+function relativeTime(ts) {
+  if (!ts) return '';
+  var now = Date.now();
+  var diff = now - new Date(ts).getTime();
+  if (diff < 0) diff = 0;
+  var sec = Math.floor(diff / 1000);
+  if (sec < 60) return '刚刚';
+  var min = Math.floor(sec / 60);
+  if (min < 60) return min + '分钟前';
+  var hour = Math.floor(min / 60);
+  if (hour < 24) return hour + '小时前';
+  var day = Math.floor(hour / 24);
+  if (day < 7) return day + '天前';
+  var week = Math.floor(day / 7);
+  if (week < 4) return week + '周前';
+  var month = Math.floor(day / 30);
+  if (month < 12) return month + '月前';
+  var year = Math.floor(day / 365);
+  return year + '年前';
 }
 
 // ── Open Preview (Page) ─────────────────────────────
@@ -511,6 +549,10 @@ window.addEventListener('pageshow', function(event) {
     }
   }
 });
+// 首页初始加载时也清空可能遗留的 hash
+if (window.location.hash) {
+  window.location.hash = '';
+}
 
 // ── Start ───────────────────────────────────────────
 init();

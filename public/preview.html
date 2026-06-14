@@ -17,40 +17,39 @@
       background: #000;
       color: #fff;
       overflow: hidden;
-      height: 100vh; /* fallback */
+      height: 100vh;
+      /* fallback */
       height: 100dvh;
     }
 
     .preview-container {
       display: flex;
       flex-direction: column;
-      height: 100vh; /* fallback */
+      height: 100vh;
+      /* fallback */
       height: 100dvh;
     }
 
-    .top-bar {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
+    /* 覆盖全局 titlebar 为暗色主题 */
+    .titlebar {
       background: rgba(0, 0, 0, 0.7);
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      z-index: 100;
     }
 
-    .top-bar .back-btn {
+    .titlebar::after {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .titlebar .titlebar-back::before {
+      border-left-color: #fff;
+      border-bottom-color: #fff;
+    }
+
+    .titlebar .titlebar-title {
       color: #fff;
-      text-decoration: none;
-      font-size: 20px;
-      margin-right: 16px;
-      line-height: 1;
-    }
-
-    .top-bar .counter {
-      font-size: 14px;
-      color: #aaa;
     }
 
     .carousel {
@@ -62,7 +61,7 @@
       touch-action: pan-y;
       user-select: none;
       -webkit-user-select: none;
-      margin-top: 48px;
+      margin-top: 44px;
     }
 
     .carousel-inner {
@@ -273,8 +272,6 @@
     }
 
     .save-btn {
-      position: fixed;
-      z-index: 200;
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -321,20 +318,23 @@
 </head>
 
 <body>
-  <button class="save-btn" id="saveBtn" title="保存图片">
-    <svg viewBox="0 0 24 24">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  </button>
+
   <div class="preview-container">
-    <div class="top-bar">
-      <a href="javascript:history.back()" class="back-btn" onclick="event.preventDefault();history.back()">←</a>
-      <span class="counter" id="counter">1 / 1</span>
+    <div class="titlebar">
+      <a href="javascript:history.back()" class="titlebar-back" onclick="event.preventDefault();history.back()"></a>
+      <span class="titlebar-title" id="previewCounter">1 / 1</span>
+      <div class="titlebar-right">
+        <button class="save-btn" id="saveBtn" title="保存图片">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+        </button>
+      </div>
     </div>
 
-    <div class="carousel" id="carousel">
+    <div class="carousel" id="carousel" style="margin-top:0">
       <div class="carousel-inner" id="carouselInner"></div>
       <button class="carousel-btn left" id="btnPrev" onclick="navigate(-1)">‹</button>
       <button class="carousel-btn right" id="btnNext" onclick="navigate(1)">›</button>

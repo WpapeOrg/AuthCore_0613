@@ -2,6 +2,33 @@
 
 ## 2026-06-14
 
+### Titlebar 组件重构
+- titlebar 重新设计为 iOS 风格：CSS 纯箭头（`::before` 伪元素）替代文字 `←`
+- 底部分割线改用 `::after` 0.5px 细线
+- 新增 `.titlebar-btn`、`.titlebar-link`、`.titlebar-checkbox` 独立样式类
+- titlebar 定位从 `sticky` 改为 `fixed`，z-index 提升至 1000
+- 全部 7 个页面（my-images / admin / profile / login / preview / upload / feedback）统一接入
+- 所有页面内容区改为独立滚动容器，防止穿透 titlebar
+
+### 页面布局修复
+- 个人资料页：移除 `<h2>`，保存按钮移入 titlebar-right
+- 登录/注册页：浅色主题重构，表单卡片居中，titlebar 正确接入
+- admin 审批页：卡片 title 与 meta 水平并排一行
+- admin 审批页 meta-row 第一项改为显示图片分类
+
+### 移动端适配
+- 所有 input `font-size` 设为 16px 防止 iOS 自动缩放
+- viewport meta 增加 `maximum-scale=1.0, user-scalable=no`
+- 全局 `confirm()` 替换为自定义 iOS 风格弹窗（`showConfirm`，毛玻璃 + 缩放动画）
+- 圆形 checkbox 样式，对勾精确居中
+
+### 接口修复
+- 补全 `POST /api/upload-avatar` 路由处理器
+
+### 其他修复
+- 退出登录后首页 tab 栏样式更新
+- admin 审批页滚动失效修复
+
 ### UI 重构与修复
 - **安全区全面回滚**: 回滚 9 个文件共 11 处 safe-area CSS 改动，ContentView.swift 保留 `.automatic` contentInsetAdjustmentBehavior
 - **Tab 美化**: 选中态改为底部紫色下划线指示器，删除 GeometryReader / 自定义 contentInset / WKUserScript 等复杂方案

@@ -6,10 +6,17 @@
   <title>个人资料</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .profile-page { max-width: 500px; margin: 0 auto; padding: 20px; min-height: 100vh; background: #0f0f0f; color: #fff; }
-    .profile-page h2 { margin-bottom: 20px; }
-    .avatar-section { text-align: center; margin-bottom: 24px; }
-    .avatar-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #333; display: inline-block; }
+    html, body { overflow: hidden; }
+    .profile-page { max-width: 500px; margin: 0 auto; padding-top: 44px; height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #0f0f0f; color: #fff; }
+    .profile-body { padding: 20px; }
+    .titlebar { background: #1a1a1a; }
+    .titlebar::after { background: rgba(255,255,255,0.12); }
+    .titlebar .titlebar-back::before { border-left-color: #fff; border-bottom-color: #fff; }
+    .titlebar .titlebar-title { color: #fff; }
+    .upload-avatar-section { width: 80px;height: 80px;border-radius: 50%; text-align: center; margin: 24px auto; position: relative; cursor: pointer;overflow: hidden; background-color: #1a1a1a;}
+    .avatar-section { text-align: center; display: inline-block; cursor: pointer; }
+    .avatar-preview { width: 100%; height: 100%; object-fit: cover; background: #333; display: inline-block; }
+    .avatar-overlay { position: absolute; inset: 0; border-radius: 50%;  display: flex; align-items: center; justify-content: center; ; transition: opacity 0.2s; font-size: 12px; color: #fff; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; color: #aaa; margin-bottom: 6px; font-size: 13px; }
     .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; background: #222; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 14px; outline: none; box-sizing: border-box; }
@@ -29,10 +36,19 @@
 </head>
 <body>
 <div class="profile-page">
-  <h2>个人资料</h2>
-  <div class="avatar-section">
-    <img class="avatar-preview" id="avatarPreview" src="" alt="头像" onerror="this.style.display='none'">
+  <div class="titlebar">
+    <a href="javascript:history.back()" class="titlebar-back" onclick="event.preventDefault();history.back()"></a>
+    <span class="titlebar-title">个人资料</span>
+    <div class="titlebar-right">
+      <button class="titlebar-btn" id="saveProfileBtn">保存</button>
+    </div>
   </div>
+  <div class="profile-body">
+  <div class="upload-avatar-section" id="avatarUpload">
+     <img class="avatar-preview" id="avatarPreview" src="" alt="头像" onerror="this.style.display='none'">
+      <div class="avatar-overlay" id="avatarOverlay">更换头像</div>
+  </div>
+  <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
   <div class="form-group">
     <label>邮箱</label>
     <input type="email" id="emailField" readonly class="readonly">
@@ -49,9 +65,7 @@
     <label for="ageField">年龄</label>
     <input type="number" id="ageField" placeholder="请输入年龄（1-120）" min="1" max="120">
   </div>
-  <button class="save-btn" id="saveBtn">保存</button>
   <p class="msg" id="msg"></p>
-  <a href="/" class="back-link">← 返回首页</a>
 </div>
 <script src="js/profile-page.js"></script>
 </body>

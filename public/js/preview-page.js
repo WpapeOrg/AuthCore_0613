@@ -111,7 +111,7 @@ function updatePosition() {
 }
 
 function updateCounter() {
-  document.getElementById('counter').textContent = `${currentIndex + 1} / ${images.length}`;
+  document.getElementById('previewCounter').textContent = `${currentIndex + 1} / ${images.length}`;
 }
 
 function navigate(dir) {

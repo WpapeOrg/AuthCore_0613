@@ -129,9 +129,11 @@ router.get("/images", optionalAuth, (req, res) => {
   // 同组多图只取首张（group_id 非空取组内最小 id；单张图 group_id 为空时取自身）
   const imagesSql = `
     SELECT i.*, c.name as category_name,
-      (SELECT COUNT(*) FROM images WHERE group_id = i.group_id AND group_id != '') as group_count
+      (SELECT COUNT(*) FROM images WHERE group_id = i.group_id AND group_id != '') as group_count,
+      u.username as uploader_name, u.avatar as uploader_avatar
     FROM images i
     LEFT JOIN categories c ON i.category_id = c.id
+    LEFT JOIN users u ON i.uploader_id = u.id
     INNER JOIN (
       SELECT MIN(id) as min_id
       FROM images
@@ -234,8 +236,8 @@ router.post(
         "g_" + Date.now() + "_" + crypto.randomBytes(6).toString("hex");
 
       const insertStmt = db.prepare(`
-      INSERT INTO images (title, category_id, thumbnail_path, hd_path, width, height, tags, uploader_id, group_id, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+      INSERT INTO images (title, category_id, thumbnail_path, hd_path, width, height, tags, uploader_id, uploader_name, uploader_avatar, group_id, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
     `);
 
       const results = [];
@@ -281,6 +283,8 @@ router.post(
           height,
           tags || "",
           req.user.id,
+          uploaderName,
+          uploaderAvatar,
           groupId,
         );
 
