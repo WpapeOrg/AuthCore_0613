@@ -110,6 +110,12 @@ body {
   background: var(--accent); color: #fff;
   display: grid; place-items: center; font-size: 13px; font-weight: 600;
 }
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .user-name { color: #fff; font-size: 13px; }
 
 .user-dropdown {
@@ -356,6 +362,11 @@ body {
 
 .fab-upload {
   background: var(--accent);
+}
+.fab-feedback {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  color: var(--text);
 }
 .fab-top {
   background: rgba(255,255,255,0.15);

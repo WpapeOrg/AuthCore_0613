@@ -165,12 +165,18 @@ function clearAuth() {
 // ── Navbar ──────────────────────────────────────────
 function updateNavbar() {
   const fabUpload = document.getElementById("fabUpload");
+  const fabFeedback = document.getElementById("fabFeedback");
   if (state.user) {
     loginBtn.classList.add("hidden");
     userArea.classList.remove("hidden");
     userName.textContent = state.user.username;
-    userAvatar.textContent = state.user.username.charAt(0).toUpperCase();
+    if (state.user.avatar) {
+      userAvatar.innerHTML = `<img src="${state.user.avatar}" class="avatar-img" alt="">`;
+    } else {
+      userAvatar.textContent = state.user.username.charAt(0).toUpperCase();
+    }
     if (fabUpload) fabUpload.classList.remove("hidden");
+    if (fabFeedback) fabFeedback.classList.remove("hidden");
     const adminLink = document.getElementById("adminLink");
     if (adminLink) {
       adminLink.style.display = state.role === "admin" ? "block" : "none";
@@ -183,6 +189,7 @@ function updateNavbar() {
     loginBtn.classList.remove("hidden");
     userArea.classList.add("hidden");
     if (fabUpload) fabUpload.classList.add("hidden");
+    if (fabFeedback) fabFeedback.classList.add("hidden");
   }
 }
 
@@ -553,6 +560,95 @@ window.addEventListener('pageshow', function(event) {
 if (window.location.hash) {
   window.location.hash = '';
 }
+
+// ── 下拉刷新 ──────────────────────────────────────────
+async function refreshImages() {
+  state.page = 1;
+  state.images = [];
+  state.loading = false;
+  state.totalPages = 1;
+  await loadImages();
+}
+
+(function() {
+  var container = document.querySelector('.home-content-area');
+  if (!container) return;
+  var pulling = false;
+  var startY = 0;
+  var pullDistance = 0;
+  var threshold = 80;
+  var indicator = null;
+
+  function createIndicator() {
+    indicator = document.createElement('div');
+    indicator.className = 'pull-refresh-indicator';
+    indicator.innerHTML = '<span class="pull-refresh-spinner">下拉刷新</span>';
+    indicator.style.cssText = 'position:fixed;top:-60px;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:center;z-index:1100;transition:top 0.2s;pointer-events:none;';
+    document.body.appendChild(indicator);
+  }
+
+  function setIndicatorState(state) {
+    if (!indicator) return;
+    var spinner = indicator.querySelector('.pull-refresh-spinner');
+    switch(state) {
+      case 'pulling':
+        spinner.textContent = '下拉刷新';
+        spinner.style.opacity = Math.min(pullDistance / threshold, 1);
+        break;
+      case 'ready':
+        spinner.textContent = '松开刷新';
+        spinner.style.opacity = '1';
+        break;
+      case 'loading':
+        spinner.innerHTML = '<span class="spinner-icon"></span>';
+        spinner.style.opacity = '1';
+        break;
+    }
+  }
+
+  function showIndicator() { if (indicator) indicator.style.top = '0'; }
+  function hideIndicator() { if (indicator) indicator.style.top = '-60px'; }
+
+  createIndicator();
+
+  var style = document.createElement('style');
+  style.textContent = '.pull-refresh-spinner{font-size:13px;color:#8e8e93;}.spinner-icon{display:inline-block;width:20px;height:20px;border:2px solid #c7c7cc;border-top-color:#8e8e93;border-radius:50%;animation:ptr-spin 0.6s linear infinite;}@keyframes ptr-spin{to{transform:rotate(360deg);}}';
+  document.head.appendChild(style);
+
+  container.addEventListener('touchstart', function(e) {
+    if (container.scrollTop > 5) return;
+    startY = e.touches[0].clientY;
+    pulling = true;
+    pullDistance = 0;
+  }, { passive: true });
+
+  container.addEventListener('touchmove', function(e) {
+    if (!pulling) return;
+    var currentY = e.touches[0].clientY;
+    pullDistance = currentY - startY;
+    if (pullDistance <= 0) { pulling = false; hideIndicator(); return; }
+    if (pullDistance > 120) pullDistance = 120;
+    showIndicator();
+    setIndicatorState(pullDistance >= threshold ? 'ready' : 'pulling');
+  }, { passive: true });
+
+  container.addEventListener('touchend', function() {
+    if (!pulling) return;
+    pulling = false;
+    if (pullDistance >= threshold) {
+      setIndicatorState('loading');
+      showIndicator();
+      refreshImages().then(function() {
+        hideIndicator();
+      }).catch(function() {
+        hideIndicator();
+      });
+    } else {
+      hideIndicator();
+    }
+    pullDistance = 0;
+  });
+})();
 
 // ── Start ───────────────────────────────────────────
 init();

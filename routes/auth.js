@@ -175,4 +175,24 @@ router.get('/admin/passwords', (req, res) => {
   res.json(rows);
 });
 
+// ── 用户反馈（需登录）────────────────────────────────
+router.post('/feedback', authMiddleware, (req, res) => {
+  const { rating, content } = req.body;
+
+  if (!rating || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: '请提供 1-5 的评分' });
+  }
+
+  try {
+    db.prepare('INSERT INTO feedbacks (user_id, rating, content) VALUES (?, ?, ?)').run(
+      req.user.id,
+      rating,
+      content || ''
+    );
+    res.json({ message: '感谢您的反馈！' });
+  } catch (err) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
 module.exports = router;

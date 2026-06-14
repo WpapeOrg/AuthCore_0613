@@ -69,3 +69,22 @@
 - **移除 bottom-bar**: 去掉移动端底部导航栏，优化移动端全屏体验
 - **picb_scraper 优化**: 移除末尾 `window.scrollTo(0,0)`，使多次运行从当前位置继续而非从头开始
 - **数据清理**: 删除 images 表 id≥17 的旧数据，重新导入后分类统一设为 141（18+）
+
+### 反馈系统
+- 新增 POST /api/feedback 路由（authMiddleware 鉴权，1-5 评分校验，写入 feedbacks 表）
+- 重写 feedback.html：iOS 浅色风格，白色圆角卡片布局
+- 五星评分：SVG 双态（空心/金色填充），弹性缩放动画，5 级中文标签
+- 低评分（<3 星）自动展开文本框，聚焦边框紫色高亮
+- 提交成功对勾 stroke 动画 + 弹性缩放卡片，1.8s 后自动返回
+
+### 审批系统
+- 新增 POST /api/images/approve-batch 批量审批路由（adminMiddleware，事务批量更新）
+
+### 首页优化
+- 新增下拉刷新功能：`.home-content-area` 触摸下拉，三态指示器（下拉刷新 / 松开刷新 / 加载中 spinner）
+- 头像支持真实图片：已登录且有 avatar URL 时渲染 `<img>`，否则保留默认首字母图标
+- 反馈入口从 navbar-right 迁移至 fab-container（`fab-feedback` 按钮，毛玻璃风格）
+
+### 移动端交互修复
+- 全局 `confirm()` 替换为自定义 iOS 风格弹窗（`showConfirm`，毛玻璃 + 缩放动画）
+- 圆形 checkbox 对勾精确居中修复（`:checked::after` 使用 translate 定位）

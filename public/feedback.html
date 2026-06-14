@@ -4,164 +4,232 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>用户反馈</title>
+  <link rel="stylesheet" href="css/style.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; }
+    html, body { overflow: hidden; height: 100%; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      background: #0f0f0f;
-      color: #e0e0e0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-      padding-top: 44px;
+      background: #f2f2f7;
+      color: #333;
     }
-    .feedback-container {
-      max-width: 420px;
-      width: 100%;
-      padding: 40px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .feedback-page {
+      height: 100vh;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      flex: 1;
+      padding-top: 44px;
     }
-    h1 {
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #fff;
+    .feedback-card {
+      margin: 24px 16px;
+      padding: 32px 24px 28px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .subtitle {
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 32px;
-    }
-    .stars {
+    .stars-row {
       display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 10px;
     }
     .star-btn {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       background: none;
       border: none;
       cursor: pointer;
-      transition: transform 0.15s;
+      padding: 4px;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      -webkit-tap-highlight-color: transparent;
     }
-    .star-btn:hover { transform: scale(1.15); }
-    .star-btn:active { transform: scale(0.9); }
-    .star-btn svg {
-      width: 100%;
-      height: 100%;
+    .star-btn:active { transform: scale(0.88); }
+    .star-btn svg { width: 100%; height: 100%; }
+    .star-btn .star-outline { fill: none; stroke: #d1d1d6; stroke-width: 1.5; }
+    .star-btn .star-filled { fill: #ffb800; stroke: #ffb800; stroke-width: 1.5; display: none; }
+    .star-btn.filled .star-outline { display: none; }
+    .star-btn.filled .star-filled { display: block; }
+    .star-btn.filled { animation: starPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+    @keyframes starPop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.32); }
+      100% { transform: scale(1); }
     }
-    .star-btn.empty svg { fill: #333; stroke: #444; }
-    .star-btn.filled svg { fill: #f5a623; stroke: #f5a623; }
-    .feedback-textarea {
-      width: 100%;
-      min-height: 100px;
-      padding: 12px;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 10px;
-      color: #fff;
+
+    .rating-label {
+      text-align: center;
       font-size: 14px;
-      resize: vertical;
-      outline: none;
-      transition: border-color 0.2s;
-      display: none;
+      color: #8e8e93;
+      margin-bottom: 24px;
+      min-height: 20px;
     }
-    .feedback-textarea:focus { border-color: #4a9eff; }
+    .feedback-textarea {
+      display: none;
+      width: 100%;
+      height: 110px;
+      padding: 12px 14px;
+      background: #f5f5f5;
+      border: 1px solid #e5e5ea;
+      border-radius: 12px;
+      color: #333;
+      font-size: 15px;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+      box-sizing: border-box;
+    }
+    .feedback-textarea:focus {
+      border-color: #5856d6;
+      background: #fff;
+    }
+    .feedback-textarea::placeholder { color: #c7c7cc; }
     .submit-btn {
       width: 100%;
-      padding: 12px;
-      background: #4a9eff;
+      padding: 14px;
+      background: #5856d6;
       color: #fff;
       border: none;
-      border-radius: 10px;
-      font-size: 15px;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 600;
       cursor: pointer;
-      margin-top: 16px;
+      margin-top: 20px;
+      transition: background 0.2s, opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
       display: none;
-      transition: background 0.2s;
     }
-    .submit-btn:hover { background: #3a8eef; }
-    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .back-link {
-      color: #888;
-      text-decoration: none;
-      font-size: 13px;
-      margin-top: 24px;
-    }
-    .toast {
+    .submit-btn:active { background: #4745c4; }
+    .submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .success-overlay {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.85);
-      color: #fff;
-      padding: 14px 28px;
-      border-radius: 8px;
-      z-index: 9999;
-      font-size: 14px;
-      pointer-events: none;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      z-index: 2000;
       opacity: 0;
-      transition: opacity 0.3s;
+      pointer-events: none;
+      transition: opacity 0.35s;
     }
-    .toast.show { opacity: 1; }
+    .success-overlay.show { opacity: 1; pointer-events: auto; }
+    .success-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px 40px 28px;
+      text-align: center;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+      transform: scale(0.85);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .success-overlay.show .success-card { transform: scale(1); }
+    .success-check {
+      width: 60px;
+      height: 60px;
+      background: #34c759;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .success-check svg {
+      width: 32px;
+      height: 32px;
+      stroke: #fff;
+      stroke-width: 3;
+      stroke-dasharray: 50;
+      stroke-dashoffset: 50;
+      fill: none;
+      animation: drawCheck 0.5s 0.2s forwards;
+    }
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+    .success-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 4px; }
+    .success-sub { font-size: 14px; color: #8e8e93; }
+
+    /* light titlebar override */
+    .titlebar::after { background: rgba(0,0,0,0.06); }
   </style>
 </head>
 <body>
+
   <div class="titlebar">
     <a href="javascript:history.back()" class="titlebar-back" onclick="event.preventDefault();history.back()"></a>
     <span class="titlebar-title">用户反馈</span>
     <div class="titlebar-right"></div>
   </div>
-  <div class="feedback-container">
-    <h1>用户反馈</h1>
-    <p class="subtitle">请为我们的服务评分</p>
-    <div class="stars" id="stars">
-      <button class="star-btn empty" data-rating="1"><svg viewBox="0 0 24 24" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
-      <button class="star-btn empty" data-rating="2"><svg viewBox="0 0 24 24" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
-      <button class="star-btn empty" data-rating="3"><svg viewBox="0 0 24 24" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
-      <button class="star-btn empty" data-rating="4"><svg viewBox="0 0 24 24" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
-      <button class="star-btn empty" data-rating="5"><svg viewBox="0 0 24 24" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+
+  <div class="feedback-page">
+    <div class="feedback-card">
+      <div class="stars-row" id="starsRow">
+        <button class="star-btn" data-rating="1">
+          <svg viewBox="0 0 24 24"><polygon class="star-outline" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><polygon class="star-filled" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button class="star-btn" data-rating="2">
+          <svg viewBox="0 0 24 24"><polygon class="star-outline" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><polygon class="star-filled" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button class="star-btn" data-rating="3">
+          <svg viewBox="0 0 24 24"><polygon class="star-outline" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><polygon class="star-filled" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button class="star-btn" data-rating="4">
+          <svg viewBox="0 0 24 24"><polygon class="star-outline" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><polygon class="star-filled" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button class="star-btn" data-rating="5">
+          <svg viewBox="0 0 24 24"><polygon class="star-outline" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><polygon class="star-filled" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+      </div>
+      <div class="rating-label" id="ratingLabel">请为我们的服务评分</div>
+      <textarea class="feedback-textarea" id="feedbackText" placeholder="请描述您遇到的问题或建议..."></textarea>
+      <button class="submit-btn" id="submitBtn">提交反馈</button>
     </div>
-    <textarea class="feedback-textarea" id="feedbackText" placeholder="请告诉我们哪里可以改进..."></textarea>
-    <button class="submit-btn" id="submitBtn">提交反馈</button>
-    <a href="javascript:history.back()" class="back-link">← 返回</a>
   </div>
-  <div class="toast" id="toast"></div>
+
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-card">
+      <div class="success-check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></div>
+      <div class="success-title">感谢反馈</div>
+      <div class="success-sub">您的评价对我们非常重要</div>
+    </div>
+  </div>
 
   <script>
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; }
 
+    const RATING_LABELS = ['', '非常不满意', '不满意', '一般', '满意', '非常满意'];
+
     let selectedRating = 0;
     const starBtns = document.querySelectorAll('.star-btn');
+    const ratingLabel = document.getElementById('ratingLabel');
     const textarea = document.getElementById('feedbackText');
     const submitBtn = document.getElementById('submitBtn');
-    const toast = document.getElementById('toast');
-
-    function showToast(msg) {
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
+    const successOverlay = document.getElementById('successOverlay');
 
     starBtns.forEach(btn => {
       btn.addEventListener('click', () => {
+        const prevRating = selectedRating;
         selectedRating = parseInt(btn.dataset.rating);
-        starBtns.forEach((b, i) => {
-          b.className = 'star-btn ' + (i < selectedRating ? 'filled' : 'empty');
-        });
-        if (selectedRating >= 3) {
+
+        if (prevRating === selectedRating) {
+          selectedRating = 0;
+          starBtns.forEach(b => b.classList.remove('filled'));
+          ratingLabel.textContent = '请为我们的服务评分';
           textarea.style.display = 'none';
           submitBtn.style.display = 'none';
-          submitFeedback();
+          return;
+        }
+
+        starBtns.forEach((b, i) => {
+          if (i < selectedRating) b.classList.add('filled');
+          else b.classList.remove('filled');
+        });
+
+        ratingLabel.textContent = RATING_LABELS[selectedRating];
+
+        if (selectedRating >= 3) {
+          textarea.style.display = 'none';
+          submitBtn.style.display = 'block';
         } else {
           textarea.style.display = 'block';
           submitBtn.style.display = 'block';
@@ -171,8 +239,11 @@
 
     async function submitFeedback() {
       submitBtn.disabled = true;
+      submitBtn.textContent = '提交中...';
+
       const body = { rating: selectedRating };
       if (selectedRating < 3) body.content = textarea.value.trim();
+
       try {
         const res = await fetch('/api/feedback', {
           method: 'POST',
@@ -181,15 +252,18 @@
         });
         const data = await res.json();
         if (res.ok) {
-          showToast('感谢您的评价！');
-          setTimeout(() => { if (selectedRating >= 3) history.back(); }, 1500);
+          successOverlay.classList.add('show');
+          setTimeout(() => { history.back(); }, 1800);
         } else {
-          showToast(data.error || '提交失败');
+          alert(data.error || '提交失败');
+          submitBtn.disabled = false;
+          submitBtn.textContent = '提交反馈';
         }
       } catch {
-        showToast('网络错误');
+        alert('网络错误');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交反馈';
       }
-      submitBtn.disabled = false;
     }
 
     submitBtn.addEventListener('click', submitFeedback);

@@ -31,10 +31,11 @@ AuthCore_0613/
 │   ├── css/
 │   │   └── style.css      # 全局样式
 │   └── js/
-│       ├── app.js         # 首页逻辑
+│       ├── app.js         # 首页逻辑（含下拉刷新）
 │       ├── preview-page.js # 预览页逻辑
 │       ├── import-page.js # 导入页逻辑
 │       └── ...            # 其他页面脚本
+├── feedback.html           # 用户反馈页（五星评分）
 ├── tools/
 │   ├── picb_scraper.js    # picb.cc 爬虫脚本
 │   └── import.json        # 导入数据样例
@@ -295,6 +296,44 @@ GET /api/users
 
 ---
 
+---
+
+#### 提交反馈
+
+```
+POST /api/feedback
+```
+
+**请求头**
+
+```
+Authorization: Bearer <JWT Token>
+```
+
+**请求体（JSON）**
+
+```json
+{
+  "rating": 4,
+  "content": "界面很漂亮，但加载稍慢"
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `rating` | int | 是 | 1-5 星评分 |
+| `content` | string | 否 | 文字反馈（<3 星时建议填写） |
+
+**成功响应** `200`
+
+```json
+{
+  "message": "感谢您的反馈！"
+}
+```
+
+---
+
 ### 图片相关
 
 #### 获取分类列表
@@ -488,6 +527,43 @@ PUT /api/images/:id/reject
 
 ```
 Authorization: Bearer <JWT Token>
+```
+
+---
+
+#### 批量审批图片（管理员）
+
+```
+POST /api/images/approve-batch
+```
+
+**请求头**
+
+```
+Authorization: Bearer <JWT Token>
+```
+
+**请求体（JSON）**
+
+```json
+{
+  "action": "approve",
+  "image_ids": [1, 3, 5]
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `action` | string | 是 | `approve` 或 `reject` |
+| `image_ids` | int[] | 是 | 待审批图片 ID 列表 |
+
+**成功响应** `200`
+
+```json
+{
+  "success": true,
+  "count": 3
+}
 ```
 
 ---
