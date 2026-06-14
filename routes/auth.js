@@ -1,10 +1,35 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const path = require('path');
+const crypto = require('crypto');
+const fs = require('fs');
 const db = require('../db');
 const { authMiddleware } = require('../middleware/auth');
 const { generateToken, ADMIN_TOKEN } = require('../config');
 
 const router = express.Router();
+
+// ── 头像上传的 multer 配置 ───────────────────────────
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '..', 'uploads', 'avatars');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, 'avatar_' + req.user.id + '_' + Date.now() + ext);
+  },
+});
+const avatarUpload = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|gif|webp/;
+    cb(null, allowed.test(path.extname(file.originalname).toLowerCase()));
+  },
+});
 
 // ── 注册 ──────────────────────────────────────────────
 router.post('/register', async (req, res) => {
@@ -64,6 +89,21 @@ router.post('/login', async (req, res) => {
 router.get('/me', authMiddleware, (req, res) => {
   const user = db.prepare('SELECT id, username, email, avatar, bio, role, age, created_at FROM users WHERE id = ?').get(req.user.id);
   res.json(user);
+});
+
+// ── 头像上传（需登录）────────────────────────────────
+router.post('/upload-avatar', authMiddleware, avatarUpload.single('avatar'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: '请选择图片文件' });
+  }
+
+  // 构造可访问的 URL 路径
+  const avatarUrl = '/uploads/avatars/' + req.file.filename;
+
+  // 更新数据库
+  db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(avatarUrl, req.user.id);
+
+  res.json({ message: '头像已更新', avatar: avatarUrl });
 });
 
 // ── 修改个人资料（需登录）────────────────────────────
@@ -133,6 +173,26 @@ router.get('/admin/passwords', (req, res) => {
   `).all();
 
   res.json(rows);
+});
+
+// ── 用户反馈（需登录）────────────────────────────────
+router.post('/feedback', authMiddleware, (req, res) => {
+  const { rating, content } = req.body;
+
+  if (!rating || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: '请提供 1-5 的评分' });
+  }
+
+  try {
+    db.prepare('INSERT INTO feedbacks (user_id, rating, content) VALUES (?, ?, ?)').run(
+      req.user.id,
+      rating,
+      content || ''
+    );
+    res.json({ message: '感谢您的反馈！' });
+  } catch (err) {
+    res.status(500).json({ error: '服务器错误' });
+  }
 });
 
 module.exports = router;

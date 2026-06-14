@@ -21,5 +21,6 @@ app.listen(PORT, () => {
   console.log(`     GET  /api/categories   → 分类列表`);
   console.log(`     GET  /api/images       → 图片列表（分页）`);
   console.log(`     GET  /api/images/:id   → 图片详情 (需 Token)`);
-  console.log(`     POST /api/images/upload → 上传图片 (需 Token)\n`);
+  console.log(`     POST /api/images/upload → 上传图片 (需 Token)`);
+  console.log(`     POST /api/upload-avatar → 上传头像 (需 Token)\n`);
 });

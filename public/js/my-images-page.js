@@ -59,7 +59,8 @@ function renderImages() {
 }
 
 async function delistImage(id) {
-  if (!confirm('确定要下架这张图片吗？图片将从服务器永久删除，不可恢复。')) return;
+  var ok = await showConfirm({ title: '下架确认', message: '确定要下架这张图片吗？图片将从服务器永久删除，不可恢复。', danger: true });
+  if (!ok) return;
   try {
     const res = await fetch(API + `/images/${id}`, {
       method: 'DELETE',

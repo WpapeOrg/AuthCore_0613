@@ -73,6 +73,15 @@ db.exec(`
     FOREIGN KEY (image_id) REFERENCES images(id),
     FOREIGN KEY (user_id)  REFERENCES users(id)
   );
+
+  CREATE TABLE IF NOT EXISTS feedbacks (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER,
+    rating      INTEGER NOT NULL,
+    content     TEXT    DEFAULT '',
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
 `);
 
 // ── 迁移：补齐旧表缺失字段 ────────────────────────────
@@ -99,6 +108,12 @@ try {
 } catch {}
 try {
   db.exec("ALTER TABLE images ADD COLUMN status TEXT DEFAULT 'pending'");
+} catch {}
+try {
+  db.exec("ALTER TABLE images ADD COLUMN uploader_name TEXT DEFAULT ''");
+} catch {}
+try {
+  db.exec("ALTER TABLE images ADD COLUMN uploader_avatar TEXT DEFAULT ''");
 } catch {}
 // 兼容旧数据：如果 images 表缺少 category_id 列，则添加并默认指向第一个分类（id=1）
 try {
