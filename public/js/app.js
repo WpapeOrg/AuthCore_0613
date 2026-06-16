@@ -323,7 +323,6 @@ function ensureLazyObserver() {
           const wrap = skeleton.parentElement;
           if (wrap) wrap.style.minHeight = skelHeight;
         }
-        img.src = src;
         img.alt = alt;
         img.className = "lazy-loading";
         img.onerror = function () {
@@ -339,6 +338,17 @@ function ensureLazyObserver() {
           if (wrap) wrap.style.minHeight = "";
           img.classList.replace("lazy-loading", "lazy-loaded");
         };
+        // 空 src 会导致浏览器请求当前页面 URL → onerror → fallback 变暗
+        // 直接走 fallback 路径，避免无意义的网络请求和 "黑色" 占位
+        if (!src) {
+          setImgFallback(img);
+          img.style.height = "";
+          const wrap = img.parentElement;
+          if (wrap) wrap.style.minHeight = "";
+          img.classList.replace("lazy-loading", "lazy-loaded");
+        } else {
+          img.src = src;
+        }
         skeleton.replaceWith(img);
         lazyObserver.unobserve(skeleton);
       });
@@ -392,9 +402,7 @@ function renderGallery(images) {
     const groupCount = img.group_count || 0;
     const badgeHtml =
       groupCount > 1 ? `<span class="group-badge">+${groupCount}</span>` : "";
-    const thumbSrc = img.thumbnail_path
-      ? (/^https?:\/\//.test(img.thumbnail_path) ? img.thumbnail_path : img.thumbnail_path.replace(/.*\/uploads/, "/uploads"))
-      : "";
+    const thumbSrc = img.thumbnail_path || "";
 
     const card = document.createElement("div");
     card.className = "card";
@@ -426,14 +434,16 @@ function renderGallery(images) {
         ${statusBadgeHtml}
         <div class="skeleton" style="height:${skelH}px" data-src="${thumbSrc}" data-alt="${escapeHtml(img.title)}"></div>
       </div>
-      <button class="card-like-btn" data-imgid="${img.id}" onclick="event.stopPropagation();toggleCardLike(${img.id}, ${globalIdx}, this)">
-        ${img.user_liked ? SVG.heartFilled : SVG.heart}
-        <span>${img.likes || 0}</span>
-      </button>
       <div class="card-info">
-        <div class="card-publisher">
-          <div class="card-pub-avatar">${img.uploader_avatar ? `<img src="${escapeHtml(img.uploader_avatar)}" alt="" onerror="this.style.display='none'">` : (img.uploader_name || '?').charAt(0).toUpperCase()}</div>
-          <span class="card-pub-name">${escapeHtml(img.uploader_name || '未知用户')}</span>
+        <div class="card-info-row">
+          <div class="card-publisher">
+            <div class="card-pub-avatar">${img.uploader_avatar ? `<img src="${escapeHtml(img.uploader_avatar)}" alt="" onerror="this.style.display='none'">` : (img.uploader_name || '?').charAt(0).toUpperCase()}</div>
+            <span class="card-pub-name">${escapeHtml(img.uploader_name || '未知用户')}</span>
+          </div>
+          <button class="card-like-btn" data-imgid="${img.id}" onclick="event.stopPropagation();toggleCardLike(${img.id}, ${globalIdx}, this)">
+            ${img.user_liked ? SVG.heartFilled : SVG.heart}
+            <span>${img.likes || 0}</span>
+          </button>
         </div>
         <div class="card-meta">
           <span>${escapeHtml(img.category_name || "")}</span>

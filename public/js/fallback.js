@@ -33,13 +33,14 @@ window.showConfirm = function({ title, message, confirmText, cancelText, danger 
 
 (function(){
   var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">'
-    + '<rect fill="#262626" width="400" height="300" rx="8"/>'
-    + '<g transform="translate(152,80)" fill="none" stroke="#666" stroke-width="1.8">'
+    + '<rect fill="#2a2a2a" width="400" height="300" rx="8"/>'
+    + '<rect fill="none" stroke="#444" stroke-width="1" x="0.5" y="0.5" width="399" height="299" rx="8"/>'
+    + '<g transform="translate(152,80)" fill="none" stroke="#777" stroke-width="1.8">'
     + '<rect x="2" y="2" width="92" height="92" rx="8" stroke-dasharray="4 3"/>'
     + '<circle cx="36" cy="32" r="10"/>'
     + '<polyline points="94,88 64,52 12,88"/>'
     + '</g>'
-    + '<text fill="#999" font-family="-apple-system,PingFang SC,sans-serif" font-size="14" font-weight="500" text-anchor="middle" x="200" y="225">图片加载失败</text>'
+    + '<text fill="#aaa" font-family="-apple-system,PingFang SC,sans-serif" font-size="14" font-weight="500" text-anchor="middle" x="200" y="225">图片加载失败</text>'
     + '</svg>';
   window.IMG_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent(svg);
   window.setImgFallback = function(img) {

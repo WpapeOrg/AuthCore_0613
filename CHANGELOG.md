@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-06-17
+
+### 全屏缩放查看器
+- **新增全屏图片缩放预览**：preview.html 新增 `.zoom-overlay` 黑色全屏层（z-index 9999，淡入动画），包含 `.zoom-image-wrap` 容器 + `.zoom-image` 缩放图片 + `.zoom-close` 毛玻璃关闭按钮 + `.zoom-indicator` 百分比指示器
+- **缩放与拖拽**：preview-page.js 新增 ~340 行全屏查看器逻辑 —— 触摸捏合（双指缩放，以中心点锚定）、单指拖拽平移、双击 3x 放大/还原（以点击位置为中心）、鼠标滚轮缩放（Ctrl+滚轮）、ESC 关闭
+- **边界限制**：`clampTranslation()` 禁止图片边缘进入视口内部，displayH 基于宽高比反推（规避 flex stretch 拉伸 offsetHeight），Y 轴扣除父容器 flex 居中隐式偏移防止误放
+- **单击/双击互斥**：touchend 300ms 双击窗口 + setTimeout 250ms 单击关闭，preventDefault 阻止后续 click 干扰
+- **回弹动画**：缩小至 scale < 0.8 松开后自动回弹到 scale=1 + translate(0,0)，CSS transition 平滑过渡
+- **状态指示器**：放大时左下角显示百分比（如 "300%"），缩小至基准时自动隐藏
+
+### iOS 滚动兼容（全页面统一修复）
+- **根因**：iOS Safari 中滚动容器内的图片因合成层边界导致渲染异常，需 `-webkit-overflow-scrolling: touch` + `transform: translateZ(0)` 创建独立合成层
+- **统一修复 8 个滚动容器**：
+  - `style.css` - `.home-content-area`（同时移除 `overscroll-behavior-y: contain`）
+  - `upload.html` - `.upload-page`
+  - `admin.html` - `.admin-page`
+  - `login.html` - `.auth-page`
+  - `feedback.html` - `.feedback-page`
+  - `my-images.html` - `.my-page`
+  - `profile.html` - `.profile-page`
+  - `preview.html` - `.comment-panel`
+
+### 卡片 UI 优化
+- **点赞按钮布局重构**：`.card-like-btn` 从绝对定位（bottom/right）改为 flex 子元素，新增 `.card-info-row` 容器（flex + space-between），与发布者信息水平并排一行
+- **卡片元数据对比度提升**：`.card-meta` 颜色从 `#666` 改为 `#999`，提升暗色背景可读性
+- `.card-publisher` 移除 `margin-bottom: 6px`（现在由 `.card-meta` 的 `margin-top: 6px` 统一控制间距）
+
+### 上传接口修复
+- **修复 `uploaderName` 未定义**：`POST /api/images/upload` 路由中从 `users` 表查询上传者的 `username` 和 `avatar`，传入 INSERT 语句，修复此前上传时 uploader_name 为空的问题
+
+### 图片路径规范化
+- **新增 `normalizeImagePath()` 函数**（routes/images.js）：将绝对路径（如 `/Users/.../uploads/xxx.jpg`）统一转换为 URL 路径（`/uploads/xxx.jpg`），保留已有完整 URL 和 `/uploads/` 前缀路径
+- **应用到所有图片接口**：`GET /api/images`（列表 + group 展开）、`GET /api/images/:id`（详情），thumbnail_path 和 hd_path 统一走规范化
+- **缩略图缺失兜底**：列表接口中若 thumbnail 文件不存在，自动用 hd_path 替代，避免空白
+
+### 图片展示修复
+- **懒加载空 src 防护**：`app.js` `ensureLazyObserver()` 中，`thumbnail_path` 为空时跳过 `img.src` 设置（避免浏览器请求当前页面 URL → onerror → fallback 变暗），直接走 fallback SVG
+- **路径规范化前置**：`app.js` `renderGallery()` 中 `thumbSrc` 直接使用 `thumbnail_path` 原值，不再自行做正则路径替换（后端已统一规范化）
+- **Fallback SVG 对比度优化**（fallback.js）：背景从 `#262626` 改为 `#2a2a2a`，新增 `#444` 描边边框，图标描边从 `#666` 改为 `#777`，文字从 `#999` 改为 `#aaa`
+
+### iOS 保存图片（JSBridge）
+- **多桥接兼容**：preview-page.js 保存按钮逻辑重写，iOS 端支持 4 种 JSBridge 通道：① `WKWebView.messageHandlers.saveImageToAlbum` ② `saveImage` 别名 ③ 通用 `JSBridge.call` ④ `WebViewJavascriptBridge.callHandler`
+- **Android 独立分支**：新增 Android 端保存逻辑，支持 `JSBridge.call` / `Android.saveImageToAlbum`，无桥接时回退为 `<a download>`
+- **无桥接回退优化**：iOS 无桥接场景的 `document.write` 回退页提示文案改为"请长按图片保存"
+
 ## 2026-06-14
 
 ### Titlebar 组件重构

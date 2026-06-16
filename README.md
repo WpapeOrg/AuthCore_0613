@@ -18,7 +18,7 @@ AuthCore_0613/
 │   └── auth.js            # JWT 认证中间件
 ├── routes/
 │   ├── auth.js            # 认证相关路由（注册、登录、用户信息）
-│   └── images.js          # 图片相关路由（列表、详情、点赞、评论、导入）
+│   └── images.js          # 图片相关路由（列表、详情、点赞、评论、导入、路径规范化）
 ├── public/
 │   ├── index.html         # 首页（图片流）
 │   ├── login.html         # 登录页
@@ -592,6 +592,36 @@ Authorization: Bearer <JWT Token>
 | `500` | 服务器内部错误 |
 
 ---
+
+## iOS 兼容性
+
+### 滚动容器合成层修复
+
+iOS Safari 中，滚动容器内的图片可能因合成层边界引发渲染异常（图片截断、闪烁、拖影）。解决方案是对所有 `overflow-y: auto` / `overflow: auto` 的滚动容器统一添加：
+
+```css
+-webkit-overflow-scrolling: touch;
+transform: translateZ(0);
+```
+
+`translateZ(0)` 将容器提升为独立合成层，`-webkit-overflow-scrolling: touch` 启用原生惯性滚动。已覆盖全部 8 个滚动容器（`.home-content-area`、`.upload-page`、`.admin-page`、`.auth-page`、`.feedback-page`、`.my-page`、`.profile-page`、`.comment-panel`）。
+
+### 全屏缩放查看器
+
+preview.html 内置全屏图片缩放查看器，点击轮播图片即可进入：
+
+- **触摸操作**：双指捏合缩放（0.5x ~ 3x，以中心点锚定）、单指拖拽平移、双击 3x 放大/还原
+- **边界保护**：图片边缘禁止拖入视口内部产生空白，Y 轴自动扣除 flex 居中偏移
+- **回弹**：缩小至 0.8x 以下松开自动回弹至原始大小
+- **PC 兼容**：Ctrl + 滚轮缩放、ESC 关闭
+
+### JSBridge 保存图片
+
+preview.html 保存按钮兼容 4 种 iOS JSBridge 通道（`WKWebView.messageHandlers.saveImageToAlbum` / `saveImage` / `JSBridge.call` / `WebViewJavascriptBridge`），以及 Android 的 `JSBridge.call` / `Android.saveImageToAlbum`。无桥接环境回退为全屏图片页引导长按保存。
+
+### 图片路径规范化
+
+`routes/images.js` 中 `normalizeImagePath()` 函数将数据库存储的绝对路径统一转为 URL 路径（`/uploads/xxx.jpg`），前端不再需要自行做路径正则替换。所有图片接口（列表、详情、group 展开）已统一接入。
 
 ## 注意事项
 

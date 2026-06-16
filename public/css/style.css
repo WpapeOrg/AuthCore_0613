@@ -175,7 +175,8 @@ body {
   flex: 1; display: flex; flex-direction: column;
   min-height: 0;
   overflow-y: auto;
-  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
 }
 
 .state-message {
@@ -243,14 +244,20 @@ body {
 }
 
 /* Like button on card */
+.card-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
 .card-like-btn {
-  position: absolute; bottom: 40px; right: 8px;
   display: flex; align-items: center; gap: 3px;
-  padding: 4px 10px; border-radius: 20px;
+  padding: 2px 8px; border-radius: 20px;
   background: rgba(0,0,0,0.5); color: #fff; border: none;
-  font-size: 11px; cursor: pointer; z-index: 2;
+  font-size: 11px; cursor: pointer;
   opacity: 0.7; transition: opacity var(--transition), background var(--transition);
   backdrop-filter: blur(4px);
+  flex-shrink: 0;
 }
 .card-like-btn:hover, .card-like-btn.liked {
   opacity: 1; background: rgba(220,38,38,0.8);
@@ -272,12 +279,12 @@ body {
 .card-status-badge.rejected .badge-dot-inline { background: #ff4757; }
 
 .card-info { padding: 10px 12px; }
-.card-publisher { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.card-publisher { display: flex; align-items: center; gap: 6px; }
 .card-pub-avatar { width: 22px; height: 22px; border-radius: 50%; overflow: hidden; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
 .card-pub-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .card-pub-name { font-size: 11px; color: #aaa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card-title { display: none; }
-.card-meta { font-size: 10px; color: #666; margin-top: 3px; display: flex; justify-content: space-between; align-items: center; }
+.card-meta { font-size: 10px; color: #999; margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
 
 /* ============================================================
    Flash Toast
