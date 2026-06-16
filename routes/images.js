@@ -32,6 +32,26 @@ const upload = multer({
   },
 });
 
+// ── 路径规范化：绝对路径 → URL 路径 ──────────────────
+const uploadDirAbs = path.join(__dirname, "..", "uploads");
+const authUploadDirAbs = path.join(__dirname, "..", "auth-server", "uploads");
+
+function normalizeImagePath(filePath) {
+  if (!filePath) return "";
+  // 已经是完整 URL，直接返回
+  if (/^https?:\/\//.test(filePath)) return filePath;
+  // 已经是 /uploads/... URL 形式，直接返回
+  if (filePath.startsWith("/uploads/")) return filePath;
+  // 尝试精确匹配已知 uploads 目录
+  for (const baseDir of [uploadDirAbs, authUploadDirAbs]) {
+    if (filePath.startsWith(baseDir)) {
+      return "/uploads" + filePath.slice(baseDir.length);
+    }
+  }
+  // 通用兜底：替换路径中最后一次出现的 /uploads 为 /uploads
+  return filePath.replace(/.*\/uploads/, "/uploads");
+}
+
 // ── 分类列表 ──────────────────────────────────────────
 router.get("/categories", (req, res) => {
   const cats = db.prepare("SELECT * FROM categories ORDER BY sort_order").all();
@@ -56,6 +76,11 @@ router.get("/images", optionalAuth, (req, res) => {
         "SELECT * FROM images WHERE group_id = ? ORDER BY created_at ASC",
       )
       .all(group_id);
+    // 规范化路径
+    for (const img of images) {
+      img.thumbnail_path = normalizeImagePath(img.thumbnail_path);
+      img.hd_path = normalizeImagePath(img.hd_path);
+    }
     return res.json(images);
   }
 
@@ -145,6 +170,22 @@ router.get("/images", optionalAuth, (req, res) => {
   `;
   const images = db.prepare(imagesSql).all(...params, parseInt(limit), offset);
 
+  // ── 规范化 thumbnail_path 为 URL 路径 ──
+  for (const img of images) {
+    let tp = img.thumbnail_path || "";
+    let hp = img.hd_path || "";
+
+    // 已经是完整 URL，直接跳过
+    if (/^https?:\/\//.test(tp)) continue;
+
+    // 检查 thumbnail 文件是否存在，缺失则用 hd_path 兜底
+    if (tp && !fs.existsSync(tp) && hp && fs.existsSync(hp)) {
+      tp = hp;
+    }
+
+    img.thumbnail_path = normalizeImagePath(tp);
+  }
+
   const total = db
     .prepare(
       `SELECT COUNT(*) as count FROM (SELECT 1 FROM images WHERE ${statusFilter} ${totalCategoryFilter} ${totalAdultFilter} GROUP BY CASE WHEN group_id = '' THEN CAST(id AS TEXT) ELSE group_id END)`,
@@ -201,6 +242,10 @@ router.get("/images/:id", optionalAuth, (req, res) => {
       image.hd_path = image.thumbnail_path;
   }
 
+  // 规范化路径为 URL 形式
+  image.thumbnail_path = normalizeImagePath(image.thumbnail_path);
+  image.hd_path = normalizeImagePath(image.hd_path);
+
   // 浏览量 +1
   db.prepare("UPDATE images SET views = views + 1 WHERE id = ?").run(image.id);
   image.views += 1;
@@ -234,6 +279,13 @@ router.post(
 
       const groupId =
         "g_" + Date.now() + "_" + crypto.randomBytes(6).toString("hex");
+
+      // 从数据库获取上传者的用户名和头像
+      const uploader = db
+        .prepare("SELECT username, avatar FROM users WHERE id = ?")
+        .get(req.user.id);
+      const uploaderName = uploader ? uploader.username : "未知用户";
+      const uploaderAvatar = uploader ? uploader.avatar || "" : "";
 
       const insertStmt = db.prepare(`
       INSERT INTO images (title, category_id, thumbnail_path, hd_path, width, height, tags, uploader_id, uploader_name, uploader_avatar, group_id, status)
