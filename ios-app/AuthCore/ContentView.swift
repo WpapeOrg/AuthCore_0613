@@ -3,7 +3,7 @@ import UIKit
 import WebKit
 
 func serverURL() -> String {
-    return "http://192.168.1.102:3000"
+    return "https://www.wpape.top"
 }
 
 struct WebView: UIViewRepresentable {
