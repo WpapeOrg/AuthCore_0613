@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-06-19
+
+### 文档结构拆分
+- **README 轻量化**：将大段公网访问与 API 接口内容从 README 中拆出，README 仅保留入口链接，便于作为项目总览维护
+- **新增 `docs/` 文档目录**：集中管理专题文档，减少 README 内容膨胀
+- **新增 `docs/tunneling.md`**：独立维护内网穿透与公网访问方案
+- **新增 `docs/api.md`**：独立维护后端 API 接口说明
+
+### 内网穿透与公网访问文档
+- **Cloudflare Tunnel 固定域名方案**：补充 Named Tunnel 工作方式，说明 `https://wpape.top -> http://localhost:3000` 的转发关系
+- **cloudflared 安装与服务管理**：新增 macOS/Homebrew 安装、系统服务注册、重启、状态查看、日志查看、卸载流程
+- **关键命令说明**：
+  - `brew install cloudflared`：安装 `cloudflared` 程序本体
+  - `sudo cloudflared service install <你的 tunnel token>`：注册 Tunnel 为 macOS 系统级 LaunchDaemon
+  - `sudo launchctl kickstart -k system/com.cloudflare.cloudflared`：强制重启已有 cloudflared 系统服务
+  - `sudo launchctl print system/com.cloudflare.cloudflared`：查看系统服务状态
+  - `tail -f /Library/Logs/com.cloudflare.cloudflared.err.log`：查看 cloudflared 错误日志
+  - `sudo cloudflared service uninstall`：卸载系统级 cloudflared 服务
+- **常见问题补充**：记录重复安装 `cloudflared service is already installed`、未使用 `sudo` 卸载导致查找 `LaunchAgents` 失败、Cloudflare `530`、DNS `no such host` 等排查方式
+- **网络环境说明**：补充公司网络、加域设备策略、代理或路由器 DNS 劫持可能导致 Tunnel 无法连接 Cloudflare 的说明
+- **长期部署建议**：新增 VPS + Cloudflare Tunnel 方案，说明本机部署会受电脑睡眠、关机、断网、Node 进程退出影响
+
+### API 文档拆分
+- **新增 API 独立文档**：将认证、用户资料、反馈、图片、评论、导入、审批、删除接口移动到 `docs/api.md`
+- **错误码说明迁移**：将 `400`、`401`、`409`、`500` 等错误码说明迁移到 API 文档
+- **标题层级整理**：调整 `docs/api.md` 标题结构，使其作为独立 Markdown 文档更清晰
+
+### SQLite 故障排查
+- **新增 SQLite 只读故障说明**：README 中补充 `SQLITE_READONLY` / `attempt to write a readonly database` 的识别方式
+- **补充权限检查命令**：记录 `ls -l users.db users.db-shm users.db-wal` 检查 SQLite 主库与 WAL 辅助文件权限
+- **补充修复命令**：记录 `chmod u+w users.db users.db-shm users.db-wal` 恢复当前用户写权限
+- **补充验证方式**：记录 `node server.js` 与 `curl -I http://localhost:3000` 验证本地服务恢复
+
+### 本地联调记录
+- **确认本地服务端口**：本地 Node 服务默认监听 `localhost:3000`
+- **确认局域网访问地址**：本机 Wi-Fi 局域网 IP 为 `192.168.1.101`，同网设备可访问 `http://192.168.1.101:3000`
+- **确认 Cloudflare Tunnel 当前阻塞点**：本地服务可正常返回 `200 OK`，公网 `530` 主要由 cloudflared 无法连通 Cloudflare 边缘节点引起，优先排查 DNS/网络环境
+
 ## 2026-06-17
 
 ### 全屏缩放查看器

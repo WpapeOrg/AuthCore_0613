@@ -90,6 +90,43 @@ npm run dev
    本地地址: http://localhost:3000
 ```
 
+### SQLite 只读故障处理
+
+如果启动时看到类似下面的错误，说明 SQLite 数据库文件或 WAL 辅助文件被系统标记成只读：
+
+```text
+SqliteError: attempt to write a readonly database
+code: 'SQLITE_READONLY'
+```
+
+先检查数据库文件权限：
+
+```bash
+cd /Users/XXX/JDProject/AuthCore_0613
+ls -l users.db users.db-shm users.db-wal
+```
+
+如果看到 `r--r--r--`，说明当前用户没有写权限。执行下面命令恢复可写：
+
+```bash
+chmod u+w users.db users.db-shm users.db-wal
+```
+
+再次检查时应看到 `rw-r--r--`：
+
+```bash
+ls -l users.db users.db-shm users.db-wal
+```
+
+最后重新启动服务并验证：
+
+```bash
+node server.js
+curl -I http://localhost:3000
+```
+
+`curl` 返回 `HTTP/1.1 200 OK` 即表示本地服务已经恢复。
+
 ---
 
 ## 访问方法
@@ -103,493 +140,21 @@ npm run dev
 
 ## 公网访问
 
-以下两种方式均可将本地 3000 端口暴露到公网，方便远程测试或演示。
+内网穿透和公网访问方案已拆分到独立文档维护：
 
-### 方式一：ngrok（推荐）
+- [内网穿透与公网访问](docs/tunneling.md)
 
-ngrok 提供稳定的公网隧道，支持自定义子域名、请求面板查看、HTTPS 证书等。
-
-**1. 安装**
-
-```bash
-brew install ngrok
-```
-
-**2. 注册账号并获取 authtoken**
-
-- 访问 [https://dashboard.ngrok.com/signup](https://dashboard.ngrok.com/signup) 注册免费账户
-- 登录后在 Dashboard 首页复制你的 authtoken
-
-**3. 认证**
-
-```bash
-ngrok config add-authtoken <你的token>
-```
-
-**4. 暴露端口**
-
-```bash
-ngrok http 3000
-```
-
-启动后终端会显示公网地址，例如：
-
-```
-Forwarding  https://xxxx.ngrok-free.app -> http://localhost:3000
-```
-
-此时通过 `https://xxxx.ngrok-free.app` 即可公网访问服务。ngrok 还会在本地启动 Web 面板（`http://127.0.0.1:4040`），可实时查看请求详情。
-
-### 方式二：serveo.net（轻量免安装）
-
-无需注册和安装，直接通过系统自带 SSH 即可使用。
-
-**前提条件**
-
-- 本地服务已在 3000 端口启动（`node server.js`）
-- 系统已安装 SSH 客户端
-
-**命令**
-
-```bash
-ssh -R 80:localhost:3000 serveo.net
-```
-
-执行后终端会输出公网地址，例如：
-
-```
-Forwarding HTTP traffic from https://xxx.serveo.net
-```
-
-> **注意**：serveo.net 为免费服务，SSH 连接断开后隧道立即失效，每次重连会分配不同的子域名。如需固定子域名，可使用 `ssh -R yourname:80:localhost:3000 serveo.net`（可能已被占用）。
+当前文档包含 Cloudflare Tunnel、ngrok、serveo.net、VPS 长期部署方案，以及安装、卸载、重启、查看日志和常见问题排查。
 
 ---
 
 ## API 接口说明
 
-### 认证相关
+API 文档已拆分到独立文档维护：
 
-#### 注册
+- [API 接口说明](docs/api.md)
 
-```
-POST /api/register
-```
-
-**请求体（JSON）**
-
-```json
-{
-  "username": "张三",
-  "email": "zhangsan@example.com",
-  "password": "123456"
-}
-```
-
-**成功响应** `201`
-
-```json
-{
-  "message": "注册成功",
-  "token": "<JWT Token>",
-  "username": "张三"
-}
-```
-
-#### 登录
-
-```
-POST /api/login
-```
-
-**请求体（JSON）**
-
-```json
-{
-  "email": "zhangsan@example.com",
-  "password": "123456"
-}
-```
-
-**成功响应** `200`
-
-```json
-{
-  "message": "登录成功",
-  "token": "<JWT Token>",
-  "username": "张三"
-}
-```
-
-#### 获取当前用户信息
-
-```
-GET /api/me
-```
-
-**请求头（需携带 Token）**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
-**成功响应** `200`
-
-```json
-{
-  "id": 1,
-  "username": "张三",
-  "email": "zhangsan@example.com",
-  "created_at": "2024-01-01 12:00:00"
-}
-```
-
-#### 更新用户资料
-
-```
-PUT /api/user/profile
-```
-
-**请求头**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
-**请求体（JSON）**
-
-```json
-{
-  "age": 25
-}
-```
-
-**成功响应** `200`
-
-```json
-{
-  "message": "资料更新成功"
-}
-```
-
----
-
-#### 获取所有用户（调试用）
-
-```
-GET /api/users
-```
-
-> ⚠️ 此接口仅供开发调试使用，上线前请删除。
-
-**成功响应** `200`
-
-```json
-[
-  {
-    "id": 1,
-    "username": "张三",
-    "email": "zhangsan@example.com",
-    "created_at": "2024-01-01 12:00:00"
-  }
-]
-```
-
----
-
----
-
-#### 提交反馈
-
-```
-POST /api/feedback
-```
-
-**请求头**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
-**请求体（JSON）**
-
-```json
-{
-  "rating": 4,
-  "content": "界面很漂亮，但加载稍慢"
-}
-```
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `rating` | int | 是 | 1-5 星评分 |
-| `content` | string | 否 | 文字反馈（<3 星时建议填写） |
-
-**成功响应** `200`
-
-```json
-{
-  "message": "感谢您的反馈！"
-}
-```
-
----
-
-### 图片相关
-
-#### 获取分类列表
-
-```
-GET /api/categories
-```
-
-**成功响应** `200`
-
-```json
-[
-  { "id": 49, "name": "壁纸", "icon": "wallpaper", "sort_order": 1 },
-  { "id": 141, "name": "18+", "icon": "adult", "sort_order": 9 }
-]
-```
-
----
-
-#### 获取图片列表（分页）
-
-```
-GET /api/images?sort=newest&page=1&limit=30&category_id=49
-```
-
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `sort` | string | `newest` | 排序：`newest` / `popular` / `most_liked` |
-| `page` | int | `1` | 页码 |
-| `limit` | int | `30` | 每页数量 |
-| `category_id` | int | 空 | 按分类筛选 |
-
-**请求头**（可选，影响 18+ 内容可见性）
-
-```
-Authorization: Bearer <JWT Token>
-```
-
-**成功响应** `200`
-
-```json
-{
-  "images": [
-    {
-      "id": 1,
-      "title": "示例图片",
-      "hd_path": "/uploads/2024/example.jpg",
-      "thumbnail_path": "/uploads/2024/example_thumb.jpg",
-      "width": 1920,
-      "height": 1080,
-      "category_id": 49,
-      "category_name": "壁纸",
-      "likes": 5,
-      "user_liked": true,
-      "group_id": "grp_xxx",
-      "group_count": 3
-    }
-  ],
-  "total": 120,
-  "page": 1,
-  "totalPages": 4
-}
-```
-
----
-
-#### 获取单张图片
-
-```
-GET /api/images/:id
-```
-
-**请求头**（可选）
-
-```
-Authorization: Bearer <JWT Token>
-```
-
----
-
-#### 点赞 / 取消点赞
-
-```
-POST /api/images/:id/like
-```
-
-```
-DELETE /api/images/:id/like
-```
-
-**请求头**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
----
-
-#### 获取评论
-
-```
-GET /api/images/:id/comments
-```
-
-**成功响应** `200`
-
-```json
-[
-  {
-    "id": 1,
-    "username": "张三",
-    "content": "好看",
-    "created_at": "2024-01-01 12:00:00"
-  }
-]
-```
-
----
-
-#### 发表评论
-
-```
-POST /api/images/:id/comments
-```
-
-**请求头**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
-**请求体（JSON）**
-
-```json
-{
-  "content": "好看"
-}
-```
-
----
-
-#### 批量导入图片（管理员）
-
-```
-POST /api/images/import
-```
-
-**请求头**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
-**请求体（JSON）**
-
-```json
-{
-  "images": [
-    {
-      "title": "示例",
-      "hd_path": "https://example.com/image.jpg",
-      "thumbnail_path": "https://example.com/image_thumb.jpg",
-      "width": 800,
-      "height": 600,
-      "category_id": 49
-    }
-  ]
-}
-```
-
-**成功响应** `200`
-
-```json
-{
-  "success": 10,
-  "failed": 0,
-  "errors": []
-}
-```
-
----
-
-#### 审批图片（管理员）
-
-```
-PUT /api/images/:id/approve
-PUT /api/images/:id/reject
-```
-
-**请求头**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
----
-
-#### 批量审批图片（管理员）
-
-```
-POST /api/images/approve-batch
-```
-
-**请求头**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
-**请求体（JSON）**
-
-```json
-{
-  "action": "approve",
-  "image_ids": [1, 3, 5]
-}
-```
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `action` | string | 是 | `approve` 或 `reject` |
-| `image_ids` | int[] | 是 | 待审批图片 ID 列表 |
-
-**成功响应** `200`
-
-```json
-{
-  "success": true,
-  "count": 3
-}
-```
-
----
-
-#### 删除图片
-
-```
-DELETE /api/images/:id
-```
-
-**请求头**
-
-```
-Authorization: Bearer <JWT Token>
-```
-
----
-
-## 错误码说明
-
-| 状态码 | 含义 |
-|--------|------|
-| `400` | 请求参数缺失或不合法 |
-| `401` | 未授权（Token 无效或未登录） |
-| `409` | 邮箱或用户名已存在 |
-| `500` | 服务器内部错误 |
+当前文档包含认证、用户资料、反馈、图片、评论、导入、审批、删除接口，以及错误码说明。
 
 ---
 
