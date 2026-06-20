@@ -7,3 +7,9 @@ uploads/
 .env
 .DS_Store
 *.xcuserstate
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
